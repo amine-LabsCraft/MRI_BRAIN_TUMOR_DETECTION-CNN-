@@ -1,0 +1,71 @@
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.Python
+build/
+dist/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# ─── Virtual environments ────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ─── IDE / OS ────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ─── Environment / secrets ───────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+streamlit.err
+streamlit.log
+logs/*.csv
+!logs/.gitkeep
+
+# ─── Notebook checkpoints ────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ─── Data ────────────────────────────────────────────────────────────────────
+data/raw/
+data/processed/
+data/splits/
+
+# ─── Models — large files (use Git LFS if you must commit them) ─────────────
+models/*.pth
+models/*.pt
+models/*.h5
+models/*.onnx
+!models/final_model_20251106_142153.pth   # main checkpoint (kept for now)
+!models/.gitkeep
+
+# ─── Results / outputs ───────────────────────────────────────────────────────
+results/*.csv
+results/*.png
+!results/.gitkeep
+dataset_stats/outputs/
+
+# ─── Misc ────────────────────────────────────────────────────────────────────
+*.sqlite3
+*.bak
+*~

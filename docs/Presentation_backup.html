@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>BrainScan AI — Présentation Projet</title>
+<meta name="viewport" content="width=1280, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root{
+  --navy:#0A2540; --navy-2:#0F3460; --navy-3:#061B2E;
+  --cyan:#00D4AA; --cyan-2:#33E8C4; --cyan-3:#00B894;
+  --red:#EF4444; --orange:#F59E0B; --green:#10B981; --blue:#3B82F6; --purple:#A855F7;
+  --t1:#FFFFFF; --t2:#94A3B8; --t3:#64748B;
+  --bg:#061B2E; --card:rgba(255,255,255,0.05);
+  --bd:rgba(255,255,255,0.10); --bd-h:rgba(0,212,170,0.4);
+  --font:'Inter',-apple-system,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--font);background:var(--bg);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased}
+
+/* ═══ SLIDES ═══ */
+.deck{position:relative;width:100vw;height:100vh;overflow:hidden}
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:48px 80px;
+  opacity:0;visibility:hidden;
+  transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);
+  transform:translateX(60px);
+  background:radial-gradient(ellipse at 20% 0%,#0d2d4e 0%,#061B2E 50%,#0a1628 100%);
+}
+.slide.active{opacity:1;visibility:visible;transform:translateX(0)}
+.slide.prev{transform:translateX(-60px)}
+
+/* Background grain effect */
+.slide::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    radial-gradient(circle at 80% 20%,rgba(0,212,170,0.12) 0%,transparent 50%),
+    radial-gradient(circle at 20% 80%,rgba(123,47,255,0.08) 0%,transparent 50%);
+  pointer-events:none;
+}
+.slide > *{position:relative;z-index:1}
+
+/* ═══ COVER SLIDE ═══ */
+.cover{
+  background:radial-gradient(ellipse at center,#0F3460 0%,#0A2540 40%,#061B2E 100%);
+  text-align:center;
+}
+.cover .brain-logo{
+  width:140px;height:140px;border-radius:32px;
+  background:linear-gradient(135deg,var(--cyan-3),var(--cyan-2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 80px rgba(0,212,170,0.4),inset 0 0 40px rgba(255,255,255,0.1);
+  animation:float 4s ease-in-out infinite;margin-bottom:32px;
+}
+.cover .brain-logo svg{width:72px;height:72px;color:white;stroke-width:1.8}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.03)}}
+.cover h1{
+  font-size:96px;font-weight:900;letter-spacing:-3px;line-height:1;
+  background:linear-gradient(135deg,#00D4AA,#33E8C4 40%,#7B2FFF);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  margin-bottom:16px;
+}
+.cover .tagline{font-size:24px;color:var(--t2);font-weight:300;letter-spacing:2px;margin-bottom:48px}
+.cover .meta{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin-bottom:32px}
+.cover .pill{
+  padding:10px 24px;border-radius:50px;
+  background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);
+  font-size:14px;font-weight:600;color:var(--cyan-2);
+  display:inline-flex;align-items:center;gap:8px;
+}
+.cover .stats{display:flex;gap:64px;margin-top:48px}
+.cover .stat-big{text-align:center}
+.cover .stat-big .num{font-size:56px;font-weight:900;color:var(--cyan-2);letter-spacing:-2px}
+.cover .stat-big .lbl{font-size:13px;color:var(--t2);text-transform:uppercase;letter-spacing:2px;margin-top:4px}
+
+/* ═══ SECTION HEADERS ═══ */
+.section-header{text-align:center;background:linear-gradient(135deg,#0A2540 0%,#0F3460 100%)}
+.section-header .num-large{
+  font-size:200px;font-weight:900;letter-spacing:-10px;line-height:.85;
+  background:linear-gradient(135deg,#00D4AA,#7B2FFF);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  opacity:.8;
+}
+.section-header .label-section{
+  font-size:14px;text-transform:uppercase;letter-spacing:6px;color:var(--cyan-2);font-weight:600;margin-bottom:12px;
+}
+.section-header h2{font-size:64px;font-weight:800;letter-spacing:-2px;margin-top:8px;color:white}
+.section-header .desc{font-size:20px;color:var(--t2);margin-top:20px;max-width:720px}
+
+/* ═══ STANDARD SLIDE LAYOUT ═══ */
+.slide-num{position:absolute;top:24px;right:32px;font-size:13px;color:var(--t3);font-weight:500;font-family:var(--mono)}
+.slide-title{
+  font-size:48px;font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-bottom:8px;
+  display:flex;align-items:center;gap:18px;color:white;
+}
+.slide-title .icon-wrap{
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(135deg,var(--cyan-3),var(--cyan-2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 12px 32px rgba(0,212,170,0.3);
+}
+.slide-title svg{width:32px;height:32px;color:white;stroke-width:2}
+.slide-subtitle{font-size:20px;color:var(--t2);font-weight:400;margin-bottom:36px;max-width:880px}
+.slide-content{width:100%;max-width:1200px;display:flex;flex-direction:column;gap:24px;flex:1;justify-content:center}
+
+/* ═══ CARDS ═══ */
+.card-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.card-row.cols-2{grid-template-columns:1fr 1fr}
+.card-row.cols-3{grid-template-columns:repeat(3,1fr)}
+.card-row.cols-4{grid-template-columns:repeat(4,1fr)}
+.card{
+  background:var(--card);backdrop-filter:blur(16px);
+  border:1px solid var(--bd);border-radius:18px;
+  padding:24px;transition:all .25s ease;
+}
+.card:hover{border-color:var(--bd-h);transform:translateY(-3px)}
+.card .ic{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+  background:rgba(0,212,170,0.15);
+}
+.card .ic svg{width:22px;height:22px;color:var(--cyan-2);stroke-width:2}
+.card.glioma .ic{background:rgba(239,68,68,0.15)} .card.glioma .ic svg{color:var(--red)}
+.card.meningioma .ic{background:rgba(245,158,11,0.15)} .card.meningioma .ic svg{color:var(--orange)}
+.card.notumor .ic{background:rgba(16,185,129,0.15)} .card.notumor .ic svg{color:var(--green)}
+.card.pituitary .ic{background:rgba(59,130,246,0.15)} .card.pituitary .ic svg{color:var(--blue)}
+.card .h{font-size:18px;font-weight:700;margin-bottom:6px;color:white}
+.card .b{font-size:14px;color:var(--t2);line-height:1.55}
+.card .num{font-size:36px;font-weight:900;color:var(--cyan-2);letter-spacing:-1px;line-height:1}
+.card .num.red{color:var(--red)} .card .num.orange{color:var(--orange)}
+.card .num.green{color:var(--green)} .card .num.blue{color:var(--blue)}
+
+/* Stat tile (large number) */
+.stat-tile{
+  text-align:center;padding:28px 18px;
+  background:var(--card);backdrop-filter:blur(16px);
+  border:1px solid var(--bd);border-radius:18px;
+}
+.stat-tile .v{font-size:56px;font-weight:900;letter-spacing:-2px;line-height:1}
+.stat-tile .l{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--t2);margin-top:8px;font-weight:600}
+
+/* ═══ BIG METRIC ═══ */
+.big-metric{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:48px;border-radius:32px;
+  background:linear-gradient(135deg,rgba(0,212,170,0.15),rgba(123,47,255,0.08));
+  border:1px solid rgba(0,212,170,0.3);
+  box-shadow:0 0 80px rgba(0,212,170,0.15);
+}
+.big-metric .v{
+  font-size:140px;font-weight:900;letter-spacing:-6px;line-height:1;
+  background:linear-gradient(135deg,var(--cyan-2),#7B2FFF);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.big-metric .l{font-size:18px;color:var(--t2);margin-top:12px;letter-spacing:1px}
+
+/* ═══ PIPELINE ARROWS ═══ */
+.pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:stretch}
+.pipeline .step{
+  background:var(--card);backdrop-filter:blur(16px);
+  border:1px solid var(--bd);border-radius:14px;
+  padding:18px 14px;text-align:center;position:relative;
+}
+.pipeline .step::after{
+  content:'→';position:absolute;right:-12px;top:50%;transform:translateY(-50%);
+  color:var(--cyan-2);font-size:20px;font-weight:700;z-index:2;
+}
+.pipeline .step:last-child::after{display:none}
+.pipeline .step .n{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--cyan-3),var(--cyan-2));
+  color:var(--navy-3);font-weight:800;font-size:14px;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 10px;
+}
+.pipeline .step .h{font-size:13px;font-weight:700;color:white;margin-bottom:4px}
+.pipeline .step .b{font-size:11px;color:var(--t2);line-height:1.4}
+
+/* ═══ FIGURE SLIDE ═══ */
+.figure-slide{display:flex;flex-direction:row;gap:32px;align-items:center}
+.figure-slide .left{flex:1.2}
+.figure-slide .right{flex:1;display:flex;flex-direction:column;gap:16px}
+.figure-frame{
+  background:white;border-radius:16px;padding:12px;
+  box-shadow:0 24px 64px rgba(0,0,0,0.4);
+  border:1px solid var(--bd);
+}
+.figure-frame img{width:100%;display:block;border-radius:8px}
+.figure-caption{font-size:12px;color:var(--t2);text-align:center;margin-top:8px;font-style:italic}
+
+/* ═══ TABLES ═══ */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--bd);color:white}
+th{
+  background:rgba(0,212,170,0.1);color:var(--cyan-2);
+  font-weight:700;text-transform:uppercase;letter-spacing:1px;font-size:11px;
+}
+td .pill-sm{padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;display:inline-block}
+.pill-sm.glioma{background:rgba(239,68,68,0.15);color:var(--red)}
+.pill-sm.meningioma{background:rgba(245,158,11,0.15);color:var(--orange)}
+.pill-sm.notumor{background:rgba(16,185,129,0.15);color:var(--green)}
+.pill-sm.pituitary{background:rgba(59,130,246,0.15);color:var(--blue)}
+
+/* ═══ CODE BLOCK ═══ */
+pre.code{
+  background:rgba(0,0,0,0.4);border:1px solid var(--bd);
+  border-radius:12px;padding:18px 22px;font-family:var(--mono);
+  font-size:13px;color:#a4f0d4;overflow:auto;line-height:1.6;
+}
+pre.code .k{color:#7B2FFF;font-weight:600}
+pre.code .s{color:#fcd34d}
+pre.code .c{color:#64748B;font-style:italic}
+
+/* ═══ BADGES ═══ */
+.badges{display:flex;gap:10px;flex-wrap:wrap}
+.badge{
+  padding:6px 14px;border-radius:50px;font-size:12px;font-weight:600;
+  background:rgba(255,255,255,0.05);border:1px solid var(--bd);color:var(--t2);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.badge.green{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.35);color:#34d399}
+.badge.cyan{background:rgba(0,212,170,0.12);border-color:rgba(0,212,170,0.35);color:var(--cyan-2)}
+.badge.orange{background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.35);color:#fbbf24}
+.badge.red{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.35);color:#f87171}
+.badge svg{width:13px;height:13px}
+
+/* ═══ ARCH DIAGRAM ═══ */
+.arch{
+  background:var(--card);backdrop-filter:blur(16px);
+  border:1px solid var(--bd);border-radius:20px;padding:24px;
+}
+.arch-block{
+  background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.25);
+  border-radius:14px;padding:14px 18px;text-align:center;
+  margin:8px 0;font-size:13px;color:white;font-weight:600;
+}
+.arch-block.input{background:rgba(123,47,255,0.1);border-color:rgba(123,47,255,0.3)}
+.arch-block.output{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3)}
+.arch-block .sub{font-size:11px;color:var(--t2);font-weight:400;margin-top:2px}
+.arch-arrow{text-align:center;color:var(--cyan-2);font-size:18px;margin:2px 0}
+
+/* ═══ NAV ═══ */
+.nav{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;gap:12px;align-items:center;z-index:100;
+  background:rgba(10,37,64,0.85);backdrop-filter:blur(20px);
+  padding:10px 16px;border-radius:50px;
+  border:1px solid var(--bd);
+}
+.nav button{
+  width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(255,255,255,0.05);color:white;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.nav button:hover{background:rgba(0,212,170,0.2)}
+.nav button:disabled{opacity:.3;cursor:not-allowed}
+.nav button svg{width:18px;height:18px}
+.nav .counter{color:var(--t2);font-size:13px;font-weight:600;font-family:var(--mono);min-width:64px;text-align:center}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--cyan-3),var(--cyan-2),#7B2FFF);transition:width .35s ease;z-index:200}
+
+/* ═══ HINT ═══ */
+.hint{
+  position:fixed;top:24px;left:32px;font-size:11px;color:var(--t3);
+  letter-spacing:2px;text-transform:uppercase;font-weight:600;
+  display:flex;align-items:center;gap:6px;
+}
+.hint svg{width:14px;height:14px}
+
+/* ═══ GALLERY ═══ */
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%}
+.gallery .img-card{
+  background:white;border-radius:12px;padding:8px;
+  box-shadow:0 12px 32px rgba(0,0,0,0.4);
+  border:1px solid var(--bd);
+}
+.gallery img{width:100%;display:block;border-radius:6px}
+.gallery .lbl{font-size:11px;color:var(--t3);text-align:center;margin-top:6px;font-weight:600}
+
+/* ═══ STAGE COMPARISON ═══ */
+.stage-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.stage-card{
+  padding:28px;border-radius:20px;
+  background:var(--card);backdrop-filter:blur(16px);
+  border:2px solid var(--bd);
+}
+.stage-card.s1{border-color:rgba(123,47,255,0.4);background:rgba(123,47,255,0.05)}
+.stage-card.s2{border-color:rgba(0,212,170,0.4);background:rgba(0,212,170,0.05)}
+.stage-card .num{font-size:64px;font-weight:900;letter-spacing:-2px;line-height:1}
+.stage-card.s1 .num{color:#a78bfa}
+.stage-card.s2 .num{color:var(--cyan-2)}
+.stage-card .h{font-size:22px;font-weight:700;margin:8px 0 14px;color:white}
+.stage-card ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.stage-card ul li{font-size:14px;color:var(--t2);padding-left:20px;position:relative}
+.stage-card ul li::before{content:'▸';position:absolute;left:0;color:var(--cyan-2);font-weight:700}
+
+/* Print: each slide = 1 page */
+@media print{
+  body{background:white;overflow:visible}
+  .deck,.slide{position:relative;width:100%;height:auto;min-height:100vh;page-break-after:always}
+  .slide{opacity:1!important;visibility:visible!important;transform:none!important}
+  .nav,.progress,.hint{display:none}
+}
+
+@media (max-width:900px){
+  .slide{padding:32px 24px}
+  .slide-title{font-size:32px}
+  .cover h1{font-size:56px}
+  .card-row.cols-3,.card-row.cols-4{grid-template-columns:1fr 1fr}
+  .pipeline{grid-template-columns:1fr 1fr 1fr}
+  .figure-slide{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="hint">
+  <i data-lucide="arrow-right"></i> Flèches · ESPACE pour avancer · F pour plein écran · P pour imprimer
+</div>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck" id="deck">
+
+<!-- ════════ SLIDE 1 — COVER ════════ -->
+<section class="slide cover active">
+  <div class="brain-logo"><i data-lucide="brain"></i></div>
+  <h1>BrainScan AI</h1>
+  <p class="tagline">Détection &amp; classification de tumeurs cérébrales par IRM</p>
+  <div class="meta">
+    <span class="pill"><i data-lucide="cpu"></i> ResNet50 · Transfer Learning</span>
+    <span class="pill"><i data-lucide="zap"></i> FastAPI · Vanilla JS · Docker</span>
+    <span class="pill"><i data-lucide="award"></i> Production-ready</span>
+  </div>
+  <div class="stats">
+    <div class="stat-big"><div class="num">98.96%</div><div class="lbl">Test accuracy</div></div>
+    <div class="stat-big"><div class="num">22</div><div class="lbl">Analyses modulaires</div></div>
+    <div class="stat-big"><div class="num">17/17</div><div class="lbl">Tests pytest ✅</div></div>
+    <div class="stat-big"><div class="num">7</div><div class="lbl">Endpoints REST</div></div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 2 — SOMMAIRE ════════ -->
+<section class="slide">
+  <span class="slide-num">02 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="list-ordered"></i></span>
+    Sommaire
+  </h2>
+  <p class="slide-subtitle">Le projet en 10 chapitres, du dataset au déploiement</p>
+  <div class="slide-content">
+    <div class="card-row cols-2">
+      <div class="card"><div class="ic"><i data-lucide="target"></i></div><div class="h">1 · Contexte médical</div><div class="b">Problématique, 4 classes de tumeurs, objectifs</div></div>
+      <div class="card"><div class="ic"><i data-lucide="layout-grid"></i></div><div class="h">2 · Architecture</div><div class="b">16 dossiers · 6 phases · stack technique</div></div>
+      <div class="card"><div class="ic"><i data-lucide="database"></i></div><div class="h">3 · Phase 1 — Données</div><div class="b">Kaggle 7023 images · preprocessing · split</div></div>
+      <div class="card"><div class="ic"><i data-lucide="dumbbell"></i></div><div class="h">4 · Phase 2 — Entraînement</div><div class="b">ResNet50 · 2 stages · transfer learning</div></div>
+      <div class="card"><div class="ic"><i data-lucide="bar-chart-3"></i></div><div class="h">5 · Phase 3 — Évaluation</div><div class="b">98.96% · matrice de confusion · ROC</div></div>
+      <div class="card"><div class="ic"><i data-lucide="grid-3x3"></i></div><div class="h">6 · Phase 4 — Statistiques</div><div class="b">22 analyses auto-découvertes</div></div>
+      <div class="card"><div class="ic"><i data-lucide="rocket"></i></div><div class="h">7 · Phase 5 — Déploiement</div><div class="b">API · Frontend · Streamlit · Docker</div></div>
+      <div class="card"><div class="ic"><i data-lucide="shield-check"></i></div><div class="h">8 · Phase 6 — Qualité</div><div class="b">17 tests · CI/CD · pre-commit</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 3 — SECTION 1 HEADER ════════ -->
+<section class="slide section-header">
+  <span class="slide-num">03 / 32</span>
+  <div class="num-large">01</div>
+  <div class="label-section">Chapitre Un</div>
+  <h2>Contexte &amp; Objectifs</h2>
+  <p class="desc">Pourquoi ce projet ? Quelles classes ? Quels objectifs ?</p>
+</section>
+
+<!-- ════════ SLIDE 4 — Les 4 classes ════════ -->
+<section class="slide">
+  <span class="slide-num">04 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="brain"></i></span>
+    Les 4 classes ciblées
+  </h2>
+  <p class="slide-subtitle">Diagnostic médical par IRM — chaque classe a sa palette dédiée</p>
+  <div class="slide-content">
+    <div class="card-row cols-4">
+      <div class="card glioma">
+        <div class="ic"><i data-lucide="alert-triangle"></i></div>
+        <div class="h" style="color:var(--red)">Glioma</div>
+        <div class="b">Tumeur maligne issue des cellules gliales. Haute gravité, évaluation neurologique urgente.</div>
+        <div style="margin-top:14px"><span class="badge red"><i data-lucide="trending-up"></i> 3 / 100k / an</span></div>
+      </div>
+      <div class="card meningioma">
+        <div class="ic"><i data-lucide="alert-circle"></i></div>
+        <div class="h" style="color:var(--orange)">Méningiome</div>
+        <div class="b">Tumeur issue des méninges, généralement bénigne. Surveillance recommandée.</div>
+        <div style="margin-top:14px"><span class="badge orange"><i data-lucide="trending-up"></i> 7.8 / 100k</span></div>
+      </div>
+      <div class="card notumor">
+        <div class="ic"><i data-lucide="check-circle"></i></div>
+        <div class="h" style="color:var(--green)">Aucune tumeur</div>
+        <div class="b">Cerveau dans les limites normales. Suivi de routine si symptômes.</div>
+        <div style="margin-top:14px"><span class="badge green"><i data-lucide="check"></i> Normal</span></div>
+      </div>
+      <div class="card pituitary">
+        <div class="ic"><i data-lucide="circle-dot"></i></div>
+        <div class="h" style="color:var(--blue)">Hypophysaire</div>
+        <div class="b">Adénome de la glande pituitaire. Endocrinologie + neurochirurgie.</div>
+        <div style="margin-top:14px"><span class="badge" style="background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.35);color:#60a5fa"><i data-lucide="trending-up"></i> 77 / 100k</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 5 — Objectifs ════════ -->
+<section class="slide">
+  <span class="slide-num">05 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="target"></i></span>
+    Objectifs du projet
+  </h2>
+  <p class="slide-subtitle">Construire un système ML médical complet, de l'entraînement à la production</p>
+  <div class="slide-content">
+    <div class="card-row cols-3">
+      <div class="card"><div class="ic"><i data-lucide="trending-up"></i></div><div class="h">Performance</div><div class="b">Classifieur 4-classes &gt; 95% accuracy sur test set indépendant</div></div>
+      <div class="card"><div class="ic"><i data-lucide="eye"></i></div><div class="h">Interprétabilité</div><div class="b">Grad-CAM en pur PyTorch pour expliquer chaque décision</div></div>
+      <div class="card"><div class="ic"><i data-lucide="server"></i></div><div class="h">API Production-Ready</div><div class="b">FastAPI sécurisée : CORS, rate limit, API key, cache LRU</div></div>
+      <div class="card"><div class="ic"><i data-lucide="layout"></i></div><div class="h">Frontend moderne</div><div class="b">Vanilla JS sans framework lourd · Chart.js · jsPDF</div></div>
+      <div class="card"><div class="ic"><i data-lucide="container"></i></div><div class="h">Reproductibilité</div><div class="b">Docker multi-stage · CI/CD GitHub Actions · 17 tests</div></div>
+      <div class="card"><div class="ic"><i data-lucide="book-open"></i></div><div class="h">Documentation</div><div class="b">17 READMEs + 17 FLOW.md couvrant chaque dossier</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 6 — SECTION 2 HEADER ════════ -->
+<section class="slide section-header">
+  <span class="slide-num">06 / 32</span>
+  <div class="num-large">02</div>
+  <div class="label-section">Chapitre Deux</div>
+  <h2>Architecture du projet</h2>
+  <p class="desc">Vue d'ensemble · 16 dossiers · 6 phases · 5 principes</p>
+</section>
+
+<!-- ════════ SLIDE 7 — Pipeline 6 phases ════════ -->
+<section class="slide">
+  <span class="slide-num">07 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="workflow"></i></span>
+    Pipeline en 6 phases
+  </h2>
+  <p class="slide-subtitle">De la donnée brute Kaggle au déploiement Docker, en 6 étapes orchestrées</p>
+  <div class="slide-content">
+    <div class="pipeline">
+      <div class="step"><div class="n">1</div><div class="h">Data</div><div class="b">Kaggle → preprocess → splits</div></div>
+      <div class="step"><div class="n">2</div><div class="h">Train</div><div class="b">ResNet50 · 2 stages</div></div>
+      <div class="step"><div class="n">3</div><div class="h">Eval</div><div class="b">Test 1054 images</div></div>
+      <div class="step"><div class="n">4</div><div class="h">Stats</div><div class="b">22 figures auto</div></div>
+      <div class="step"><div class="n">5</div><div class="h">Deploy</div><div class="b">API + UI</div></div>
+      <div class="step"><div class="n">6</div><div class="h">Quality</div><div class="b">Tests + CI/CD</div></div>
+    </div>
+    <div class="card-row cols-3" style="margin-top:24px">
+      <div class="card"><div class="ic"><i data-lucide="folder"></i></div><div class="h">16 dossiers top-level</div><div class="b">Chacun avec README + FLOW.md</div></div>
+      <div class="card"><div class="ic"><i data-lucide="puzzle"></i></div><div class="h">Auto-découverte</div><div class="b">Registry pattern · 1 fichier = 1 analyse</div></div>
+      <div class="card"><div class="ic"><i data-lucide="settings"></i></div><div class="h">Config par .env</div><div class="b">CORS, API key, rate limit, log level</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 8 — Stack technique ════════ -->
+<section class="slide">
+  <span class="slide-num">08 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="layers"></i></span>
+    Stack technique
+  </h2>
+  <p class="slide-subtitle">Technologies modernes · 100 % open-source · production-grade</p>
+  <div class="slide-content">
+    <div class="card-row cols-3">
+      <div class="card"><div class="ic"><i data-lucide="cpu"></i></div><div class="h">Deep Learning</div><div class="b" style="margin-top:10px">PyTorch 2.11 · torchvision · CUDA 11.8</div><div class="badges" style="margin-top:14px"><span class="badge cyan">PyTorch</span><span class="badge cyan">Albumentations</span></div></div>
+      <div class="card"><div class="ic"><i data-lucide="server"></i></div><div class="h">Backend</div><div class="b" style="margin-top:10px">FastAPI · uvicorn · slowapi · python-dotenv</div><div class="badges" style="margin-top:14px"><span class="badge cyan">FastAPI</span><span class="badge cyan">Docker</span></div></div>
+      <div class="card"><div class="ic"><i data-lucide="palette"></i></div><div class="h">Frontend</div><div class="b" style="margin-top:10px">Vanilla JS ES2020 · Chart.js · Lucide · jsPDF</div><div class="badges" style="margin-top:14px"><span class="badge cyan">Zero-build</span><span class="badge cyan">Streamlit</span></div></div>
+      <div class="card"><div class="ic"><i data-lucide="bar-chart-3"></i></div><div class="h">Data Science</div><div class="b" style="margin-top:10px">NumPy · Pandas · OpenCV · Pillow · sklearn</div></div>
+      <div class="card"><div class="ic"><i data-lucide="check-square"></i></div><div class="h">Tests &amp; Lint</div><div class="b" style="margin-top:10px">pytest · httpx · ruff · black · mypy</div></div>
+      <div class="card"><div class="ic"><i data-lucide="git-branch"></i></div><div class="h">DevOps</div><div class="b" style="margin-top:10px">Docker multi-stage · GitHub Actions · pre-commit</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 9 — SECTION 3 HEADER ════════ -->
+<section class="slide section-header">
+  <span class="slide-num">09 / 32</span>
+  <div class="num-large">03</div>
+  <div class="label-section">Phase Un</div>
+  <h2>Préparation des données</h2>
+  <p class="desc">Du dataset Kaggle aux .npy normalisés stratifiés 70/15/15</p>
+</section>
+
+<!-- ════════ SLIDE 10 — Distribution des classes (figure) ════════ -->
+<section class="slide">
+  <span class="slide-num">10 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="pie-chart"></i></span>
+    Distribution du dataset
+  </h2>
+  <p class="slide-subtitle">7 023 images IRM Kaggle · 4 classes équilibrées</p>
+  <div class="slide-content">
+    <div class="figure-slide">
+      <div class="left">
+        <div class="figure-frame">
+          <img src="../dataset_stats/outputs/figures/overview/01_class_distribution.png" alt="Class distribution"/>
+        </div>
+        <p class="figure-caption">fig01 — Distribution des classes (bar + pie chart)</p>
+      </div>
+      <div class="right">
+        <div class="card glioma"><div class="num red">1 621</div><div class="b" style="margin-top:6px">Glioma</div></div>
+        <div class="card meningioma"><div class="num orange">1 645</div><div class="b" style="margin-top:6px">Méningiome</div></div>
+        <div class="card notumor"><div class="num green">2 000</div><div class="b" style="margin-top:6px">No Tumor</div></div>
+        <div class="card pituitary"><div class="num blue">1 757</div><div class="b" style="margin-top:6px">Pituitary</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 11 — Pipeline preprocessing ════════ -->
+<section class="slide">
+  <span class="slide-num">11 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="filter"></i></span>
+    Pipeline de prétraitement
+  </h2>
+  <p class="slide-subtitle">JPG/PNG bruts → .npy normalisés ImageNet · 4× plus rapide à charger</p>
+  <div class="slide-content">
+    <div class="pipeline">
+      <div class="step"><div class="n">1</div><div class="h">Validation</div><div class="b">PIL.open détecte fichiers corrompus</div></div>
+      <div class="step"><div class="n">2</div><div class="h">RGB convert</div><div class="b">grayscale → 3 channels</div></div>
+      <div class="step"><div class="n">3</div><div class="h">Resize 256</div><div class="b">aspect ratio + padding</div></div>
+      <div class="step"><div class="n">4</div><div class="h">CenterCrop</div><div class="b">224 × 224 final</div></div>
+      <div class="step"><div class="n">5</div><div class="h">Normalize</div><div class="b">ImageNet mean/std</div></div>
+      <div class="step"><div class="n">6</div><div class="h">Save .npy</div><div class="b">float32 binaire</div></div>
+    </div>
+    <div class="card-row cols-3" style="margin-top:32px">
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">7 023</div><div class="l">Images totales</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">~2 GB</div><div class="l">Stockage processed/</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">4×</div><div class="l">Plus rapide à charger</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 12 — Augmentation Albumentations ════════ -->
+<section class="slide">
+  <span class="slide-num">12 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="shuffle"></i></span>
+    Augmentation Albumentations
+  </h2>
+  <p class="slide-subtitle">8 transformations appliquées au train set uniquement, à la volée</p>
+  <div class="slide-content">
+    <div class="figure-slide">
+      <div class="left">
+        <div class="figure-frame">
+          <img src="../dataset_stats/outputs/figures/image/06_augmentation_examples.png" alt="Augmentation examples"/>
+        </div>
+        <p class="figure-caption">fig06 — Exemples des 7 transformations appliquées</p>
+      </div>
+      <div class="right">
+        <div class="card"><div class="ic"><i data-lucide="flip-horizontal-2"></i></div><div class="h">HorizontalFlip · Rotate90</div><div class="b">p=0.5 · p=0.3</div></div>
+        <div class="card"><div class="ic"><i data-lucide="rotate-cw"></i></div><div class="h">Rotate ±15°</div><div class="b">RandomResizedCrop scale=0.85</div></div>
+        <div class="card"><div class="ic"><i data-lucide="sun"></i></div><div class="h">BrightnessContrast</div><div class="b">±20% · GaussianNoise · Elastic</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 13 — Split stratifié ════════ -->
+<section class="slide">
+  <span class="slide-num">13 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="git-branch"></i></span>
+    Split stratifié 70/15/15
+  </h2>
+  <p class="slide-subtitle">Préservation de la distribution des classes · seed=42 · sklearn StratifiedShuffleSplit</p>
+  <div class="slide-content">
+    <div class="figure-slide">
+      <div class="left">
+        <div class="figure-frame">
+          <img src="../dataset_stats/outputs/figures/overview/02_split_distribution.png" alt="Split distribution"/>
+        </div>
+        <p class="figure-caption">fig02 — Distribution train / val / test stratifiée</p>
+      </div>
+      <div class="right">
+        <div class="stat-tile"><div class="v" style="color:#a78bfa">4 915</div><div class="l">Train · 70%</div></div>
+        <div class="stat-tile"><div class="v" style="color:var(--orange)">1 054</div><div class="l">Val · 15%</div></div>
+        <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">1 054</div><div class="l">Test · 15%</div></div>
+        <div class="card"><div class="ic"><i data-lucide="file-json"></i></div><div class="h">split_info.json</div><div class="b">632 KB · source de vérité unique</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 14 — SECTION 4 HEADER ════════ -->
+<section class="slide section-header">
+  <span class="slide-num">14 / 32</span>
+  <div class="num-large">04</div>
+  <div class="label-section">Phase Deux</div>
+  <h2>Entraînement du modèle</h2>
+  <p class="desc">ResNet50 + tête custom · Transfer learning en 2 stages · ~24.6M paramètres</p>
+</section>
+
+<!-- ════════ SLIDE 15 — Architecture ResNet50 ════════ -->
+<section class="slide">
+  <span class="slide-num">15 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="layers-3"></i></span>
+    Architecture ResNet50Classifier
+  </h2>
+  <p class="slide-subtitle">Backbone pré-entraîné ImageNet + tête custom 4-classes</p>
+  <div class="slide-content">
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:32px;align-items:center">
+      <div class="arch">
+        <div class="arch-block input">Input · RGB tensor (B, 3, 224, 224)</div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-block">ResNet50 backbone<div class="sub">conv1 · layer1-4 (Bottlenecks) · avgpool · fc=Identity()</div></div>
+        <div class="arch-arrow">↓ (B, 2048)</div>
+        <div class="arch-block">Tête custom<div class="sub">Linear(2048→512) · ReLU · BatchNorm1d · Dropout(0.4) · Linear(512→4)</div></div>
+        <div class="arch-arrow">↓ (B, 4)</div>
+        <div class="arch-block output">Softmax → 4 classes</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">24.6M</div><div class="l">Paramètres totaux</div></div>
+        <div class="stat-tile"><div class="v" style="color:#a78bfa">23.5M</div><div class="l">Backbone ResNet50</div></div>
+        <div class="stat-tile"><div class="v" style="color:var(--orange)">1.05M</div><div class="l">Tête custom (Stage 1)</div></div>
+        <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">~15M</div><div class="l">Trainable (Stage 2)</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 16 — Stage 1 vs Stage 2 ════════ -->
+<section class="slide">
+  <span class="slide-num">16 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="dumbbell"></i></span>
+    Stratégie 2 stages
+  </h2>
+  <p class="slide-subtitle">Adaptation rapide → fine-tuning précis · LR décroissant 10×</p>
+  <div class="slide-content">
+    <div class="stage-grid">
+      <div class="stage-card s1">
+        <div class="num">1</div>
+        <div class="h">Stage 1 — Adaptation rapide</div>
+        <ul>
+          <li>20 époques · Backbone <strong>FROZEN</strong></li>
+          <li>Learning rate : <strong>1×10⁻³</strong></li>
+          <li>Trainable : ~1.05M params (tête seule)</li>
+          <li>Optimizer : Adam + ReduceLROnPlateau</li>
+          <li>Goal : adapter rapidement les features ImageNet</li>
+        </ul>
+      </div>
+      <div class="stage-card s2">
+        <div class="num">2</div>
+        <div class="h">Stage 2 — Fine-tuning précis</div>
+        <ul>
+          <li>30 époques · 30 dernières couches <strong>UNFROZEN</strong></li>
+          <li>Learning rate : <strong>1×10⁻⁴</strong> (10× plus petit)</li>
+          <li>Trainable : ~15M params</li>
+          <li>EarlyStopping (patience=7) · ModelCheckpoint</li>
+          <li>Goal : affiner les features bas-niveau</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card-row cols-3" style="margin-top:18px">
+      <div class="card"><div class="h">Sans 2 stages</div><div class="b" style="color:var(--red)">⚠ Catastrophic forgetting · convergence ~50 époques</div></div>
+      <div class="card"><div class="h">Avec 2 stages</div><div class="b" style="color:var(--green)">✓ Stable · 30-40 époques · courbes lisses</div></div>
+      <div class="card"><div class="h">Durée totale</div><div class="b">~30 min GPU · 4-6 h CPU</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 17 — Courbes d'entraînement ════════ -->
+<section class="slide">
+  <span class="slide-num">17 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="line-chart"></i></span>
+    Courbes d'entraînement
+  </h2>
+  <p class="slide-subtitle">50 époques au total · transition Stage 1 → Stage 2 visible · courbes propres</p>
+  <div class="slide-content">
+    <div class="figure-frame" style="max-width:1100px;margin:0 auto">
+      <img src="../dataset_stats/outputs/figures/training/07_training_history.png" alt="Training history"/>
+    </div>
+    <p class="figure-caption">fig07 — Loss &amp; accuracy par époque (Stage 1 + Stage 2)</p>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 18 — SECTION 5 HEADER ════════ -->
+<section class="slide section-header">
+  <span class="slide-num">18 / 32</span>
+  <div class="num-large">05</div>
+  <div class="label-section">Phase Trois</div>
+  <h2>Évaluation du modèle</h2>
+  <p class="desc">98.96 % d'accuracy · 1043 / 1054 images correctes · F1 = 0.99</p>
+</section>
+
+<!-- ════════ SLIDE 19 — Big metric 98.96% ════════ -->
+<section class="slide">
+  <span class="slide-num">19 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="award"></i></span>
+    Performance globale
+  </h2>
+  <p class="slide-subtitle">Évaluation sur les 1 054 images de test (jamais vues pendant l'entraînement)</p>
+  <div class="slide-content">
+    <div class="big-metric">
+      <div class="v">98.96%</div>
+      <div class="l">Test accuracy · 1 043 / 1 054 corrects</div>
+    </div>
+    <div class="card-row cols-4" style="margin-top:32px">
+      <div class="stat-tile"><div class="v" style="color:var(--red)">99%</div><div class="l">Glioma F1</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--orange)">98%</div><div class="l">Méningiome F1</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--green)">100%</div><div class="l">No Tumor F1</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--blue)">99%</div><div class="l">Hypophysaire F1</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 20 — Matrice de confusion ════════ -->
+<section class="slide">
+  <span class="slide-num">20 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="grid-2x2"></i></span>
+    Matrice de confusion
+  </h2>
+  <p class="slide-subtitle">Seulement 11 erreurs · Glioma ↔ Méningiome (visuellement similaires)</p>
+  <div class="slide-content">
+    <div class="figure-slide">
+      <div class="left">
+        <div class="figure-frame">
+          <img src="../dataset_stats/outputs/figures/evaluation/08_confusion_matrix.png" alt="Confusion matrix"/>
+        </div>
+        <p class="figure-caption">fig08 — Counts + recall normalisé</p>
+      </div>
+      <div class="right">
+        <table>
+          <tr><th>Vrai \ Prédit</th><th>Gli</th><th>Mé</th><th>NT</th><th>Hy</th></tr>
+          <tr><td><span class="pill-sm glioma">Glioma</span></td><td><strong>257</strong></td><td>2</td><td>0</td><td>1</td></tr>
+          <tr><td><span class="pill-sm meningioma">Méning.</span></td><td>3</td><td><strong>252</strong></td><td>0</td><td>2</td></tr>
+          <tr><td><span class="pill-sm notumor">No Tumor</span></td><td>0</td><td>1</td><td><strong>272</strong></td><td>0</td></tr>
+          <tr><td><span class="pill-sm pituitary">Pituitary</span></td><td>1</td><td>1</td><td>0</td><td><strong>262</strong></td></tr>
+        </table>
+        <div class="card" style="margin-top:18px"><div class="b">✓ <strong>Aucune confusion</strong> entre tumeur et non-tumeur (272/273 correct)</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 21 — Per-class metrics + ROC ════════ -->
+<section class="slide">
+  <span class="slide-num">21 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="bar-chart-3"></i></span>
+    Métriques par classe &amp; ROC
+  </h2>
+  <p class="slide-subtitle">Precision · Recall · F1 par classe + courbes ROC one-vs-rest</p>
+  <div class="slide-content">
+    <div class="gallery" style="grid-template-columns:1fr 1fr">
+      <div class="img-card"><img src="../dataset_stats/outputs/figures/evaluation/09_per_class_metrics.png" alt="Per-class metrics"/><div class="lbl">fig09 — Precision · Recall · F1</div></div>
+      <div class="img-card"><img src="../dataset_stats/outputs/figures/evaluation/14_roc_curves.png" alt="ROC curves"/><div class="lbl">fig14 — Courbes ROC + AUC</div></div>
+    </div>
+    <div class="card-row cols-3" style="margin-top:18px">
+      <div class="card"><div class="h">AUC moyen</div><div class="num">0.999</div></div>
+      <div class="card"><div class="h">Latence GPU</div><div class="num">~10 ms</div></div>
+      <div class="card"><div class="h">Latence CPU</div><div class="num">~36 ms</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 22 — SECTION 6 HEADER ════════ -->
+<section class="slide section-header">
+  <span class="slide-num">22 / 32</span>
+  <div class="num-large">06</div>
+  <div class="label-section">Phase Quatre</div>
+  <h2>22 Statistiques modulaires</h2>
+  <p class="desc">Architecture auto-découverte · 1 fichier = 1 analyse · zéro modification du core</p>
+</section>
+
+<!-- ════════ SLIDE 23a — Image moyenne & similarité (analyse) ════════ -->
+<section class="slide">
+  <span class="slide-num">23 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="image"></i></span>
+    Analyse · Anatomie typique des classes
+  </h2>
+  <p class="slide-subtitle">Chaque figure est interprétée — pas juste affichée</p>
+  <div class="slide-content">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <!-- Mean image -->
+      <div>
+        <div class="figure-frame"><img src="../dataset_stats/outputs/figures/image/17_mean_image.png" alt="Mean image per class"/></div>
+        <div class="card" style="margin-top:10px;border-color:rgba(0,212,170,0.35)">
+          <div class="h" style="font-size:15px;color:var(--cyan-2)">📊 fig17 — Image moyenne par classe (200 IRM)</div>
+          <div class="b" style="font-size:13px;line-height:1.6;margin-top:8px">
+            <strong>Lecture :</strong> moyenne pixel-wise des 200 premières IRM de chaque classe.<br>
+            <strong>👁 Observation clé :</strong> les masses de Méningiome et Pituitary sont visibles près de la base du crâne (zone hypophysaire pour la 4ᵉ classe). Glioma a un signal plus diffus → cohérent avec sa nature infiltrante.<br>
+            <strong>🎯 Implication :</strong> le modèle a accès à des <strong>signatures spatiales distinctes</strong> par classe — d'où l'accuracy élevée.
+          </div>
+        </div>
+      </div>
+      <!-- Inter-class similarity -->
+      <div>
+        <div class="figure-frame"><img src="../dataset_stats/outputs/figures/image/21_class_similarity.png" alt="Inter-class similarity"/></div>
+        <div class="card" style="margin-top:10px;border-color:rgba(123,47,255,0.35)">
+          <div class="h" style="font-size:15px;color:#a78bfa">🔍 fig21 — Matrice de similarité cosine inter-classes</div>
+          <div class="b" style="font-size:13px;line-height:1.6;margin-top:8px">
+            <strong>Lecture :</strong> distance cosine entre images moyennes (1.0 = identique).<br>
+            <strong>👁 Observation clé :</strong> Glioma ↔ Méningiome présentent <strong>0.99</strong> de similarité — c'est exactement la paire qui génère 5 erreurs sur 11 dans la matrice de confusion.<br>
+            <strong>🎯 Implication :</strong> les erreurs résiduelles sont <strong>visuellement justifiées</strong>, pas dues à une faiblesse du modèle.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 23b — Confidence & Calibration (analyse) ════════ -->
+<section class="slide">
+  <span class="slide-num">24 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="gauge"></i></span>
+    Analyse · Fiabilité des prédictions
+  </h2>
+  <p class="slide-subtitle">Le modèle a-t-il "raison de douter" quand il se trompe ?</p>
+  <div class="slide-content">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <!-- Confidence distribution -->
+      <div>
+        <div class="figure-frame"><img src="../dataset_stats/outputs/figures/errors/11_confidence_distribution.png" alt="Confidence distribution"/></div>
+        <div class="card" style="margin-top:10px;border-color:rgba(16,185,129,0.35)">
+          <div class="h" style="font-size:15px;color:#34d399">📈 fig11 — Confiance : prédictions correctes vs erreurs</div>
+          <div class="b" style="font-size:13px;line-height:1.6;margin-top:8px">
+            <strong>Lecture :</strong> deux histogrammes superposés (verts = corrects · rouges = erreurs).<br>
+            <strong>👁 Observation clé :</strong> les <strong>11 erreurs</strong> ont une confiance <strong>visiblement plus basse</strong> que les 1043 corrects. Le modèle "sait" qu'il hésite.<br>
+            <strong>🎯 Implication :</strong> en production, on peut <strong>seuiller à 85%</strong> et flagger 100% des erreurs pour révision humaine.
+          </div>
+        </div>
+      </div>
+      <!-- Calibration -->
+      <div>
+        <div class="figure-frame"><img src="../dataset_stats/outputs/figures/evaluation/16_calibration.png" alt="Calibration diagram"/></div>
+        <div class="card" style="margin-top:10px;border-color:rgba(245,158,11,0.35)">
+          <div class="h" style="font-size:15px;color:#fbbf24">🎯 fig16 — Reliability diagram + Brier score</div>
+          <div class="b" style="font-size:13px;line-height:1.6;margin-top:8px">
+            <strong>Lecture :</strong> bins de confiance vs accuracy réelle (diagonale = parfait).<br>
+            <strong>👁 Observation clé :</strong> Brier score ≈ <strong>0.0085</strong> · les barres suivent quasi parfaitement la diagonale → modèle <strong>bien calibré</strong>.<br>
+            <strong>🎯 Implication :</strong> "99% de confiance" signifie vraiment "99% de chances d'être correct" — exploitable pour décisions cliniques.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 23c — Sample grid & PR curves (analyse) ════════ -->
+<section class="slide">
+  <span class="slide-num">25 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="layout-grid"></i></span>
+    Analyse · Qualité données &amp; PR
+  </h2>
+  <p class="slide-subtitle">Variabilité du dataset + courbes Precision-Recall</p>
+  <div class="slide-content">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <!-- Sample grid -->
+      <div>
+        <div class="figure-frame"><img src="../dataset_stats/outputs/figures/image/05_sample_grid.png" alt="Sample grid"/></div>
+        <div class="card" style="margin-top:10px;border-color:rgba(59,130,246,0.35)">
+          <div class="h" style="font-size:15px;color:#60a5fa">🖼 fig05 — Grille d'échantillons (5 par classe)</div>
+          <div class="b" style="font-size:13px;line-height:1.6;margin-top:8px">
+            <strong>Lecture :</strong> 5 IRM aléatoires par classe affichées brutes.<br>
+            <strong>👁 Observation clé :</strong> grande <strong>variabilité d'angles</strong> (axial, sagittal, coronal) et de contrastes T1/T2/FLAIR. Pas de pattern visuel évident à l'œil nu pour distinguer Glioma vs Méningiome.<br>
+            <strong>🎯 Implication :</strong> le modèle apprend des <strong>features non-triviales</strong> que l'humain ne voit pas immédiatement.
+          </div>
+        </div>
+      </div>
+      <!-- PR curves -->
+      <div>
+        <div class="figure-frame"><img src="../dataset_stats/outputs/figures/evaluation/15_pr_curves.png" alt="Precision-Recall curves"/></div>
+        <div class="card" style="margin-top:10px;border-color:rgba(0,212,170,0.35)">
+          <div class="h" style="font-size:15px;color:var(--cyan-2)">📐 fig15 — Courbes Precision-Recall + AP</div>
+          <div class="b" style="font-size:13px;line-height:1.6;margin-top:8px">
+            <strong>Lecture :</strong> precision (Y) vs recall (X) pour chaque classe ; aire = Average Precision.<br>
+            <strong>👁 Observation clé :</strong> les 4 courbes sont <strong>"plates en haut"</strong> avec AP &gt; 0.998. Aucune classe ne souffre d'un trade-off P/R défavorable.<br>
+            <strong>🎯 Implication :</strong> le modèle est performant <strong>quel que soit le seuil</strong> de décision choisi — robuste pour différents contextes cliniques.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 24 — Architecture modulaire ════════ -->
+<section class="slide">
+  <span class="slide-num">26 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="puzzle"></i></span>
+    Architecture auto-adaptative
+  </h2>
+  <p class="slide-subtitle">Registry pattern · ajouter une 23ᵉ analyse en 4 étapes</p>
+  <div class="slide-content">
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px">
+      <pre class="code"><span class="c"># analyses/fig23_my_new.py</span>
+<span class="k">from</span> core <span class="k">import</span> save_figure, list_class_files
+
+NAME     = <span class="s">"23_my_new"</span>
+TITLE    = <span class="s">"My new analysis"</span>
+CATEGORY = <span class="s">"image"</span>
+REQUIRES = [<span class="s">"data"</span>]
+ORDER    = 23
+
+<span class="k">def</span> run() -> dict:
+    fig, ax = plt.subplots()
+    <span class="c"># ... votre code ...</span>
+    save_figure(fig, NAME)
+    <span class="k">return</span> {<span class="s">"metric"</span>: 42}</pre>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card"><div class="h">1️⃣ Drop le fichier</div><div class="b">Dans <code>analyses/</code></div></div>
+        <div class="card"><div class="h">2️⃣ Déclare 6 metadata</div><div class="b">NAME · CATEGORY · REQUIRES · ORDER · run()</div></div>
+        <div class="card"><div class="h">3️⃣ Lance --list</div><div class="b">L'analyse apparaît automatiquement</div></div>
+        <div class="card"><div class="h">4️⃣ Aucun core/ modifié</div><div class="b">Magie du registry</div></div>
+      </div>
+    </div>
+    <div class="card-row cols-5" style="grid-template-columns:repeat(5,1fr);margin-top:18px">
+      <div class="stat-tile"><div class="v" style="color:#a78bfa">2</div><div class="l">Overview</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">9</div><div class="l">Image</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--orange)">2</div><div class="l">Training</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--green)">5</div><div class="l">Evaluation</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--red)">4</div><div class="l">Errors</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 25 — SECTION 7 HEADER ════════ -->
+<section class="slide section-header">
+  <span class="slide-num">27 / 32</span>
+  <div class="num-large">07</div>
+  <div class="label-section">Phase Cinq</div>
+  <h2>Déploiement</h2>
+  <p class="desc">API FastAPI · Frontend Vanilla JS · Streamlit · Docker compose</p>
+</section>
+
+<!-- ════════ SLIDE 26 — API FastAPI 7 endpoints ════════ -->
+<section class="slide">
+  <span class="slide-num">28 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="server"></i></span>
+    API FastAPI · 7 endpoints
+  </h2>
+  <p class="slide-subtitle">Modèle chargé en singleton · Grad-CAM PyTorch inline · cache LRU MD5</p>
+  <div class="slide-content">
+    <table>
+      <tr><th>#</th><th>Méthode</th><th>Route</th><th>Auth</th><th>Description</th></tr>
+      <tr><td>1</td><td><strong>GET</strong></td><td><code>/health</code></td><td>—</td><td>Statut + métadonnées modèle</td></tr>
+      <tr><td>2</td><td><strong>POST</strong></td><td><code>/predict</code></td><td>✓</td><td>Image → classe + Grad-CAM (cache MD5)</td></tr>
+      <tr><td>3</td><td><strong>GET</strong></td><td><code>/random</code></td><td>—</td><td>Image dataset aléatoire + prédiction</td></tr>
+      <tr><td>4</td><td><strong>GET</strong></td><td><code>/explain/{class}</code></td><td>—</td><td>Infos médicales (urgence, traitement)</td></tr>
+      <tr><td>5</td><td><strong>GET</strong></td><td><code>/sample/{class}</code></td><td>—</td><td>Image d'exemple base64</td></tr>
+      <tr><td>6</td><td><strong>POST</strong></td><td><code>/batch</code></td><td>✓</td><td>Jusqu'à 20 images en parallèle</td></tr>
+      <tr><td>7</td><td><strong>GET</strong></td><td><code>/stats</code></td><td>—</td><td>Statistiques de session</td></tr>
+    </table>
+    <div class="badges" style="margin-top:18px;justify-content:center">
+      <span class="badge cyan"><i data-lucide="lock"></i> CORS configurable</span>
+      <span class="badge cyan"><i data-lucide="zap"></i> slowapi rate-limit</span>
+      <span class="badge cyan"><i data-lucide="key"></i> API key optionnelle</span>
+      <span class="badge cyan"><i data-lucide="database"></i> Cache LRU 100</span>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 27 — Frontend & Docker ════════ -->
+<section class="slide">
+  <span class="slide-num">29 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="rocket"></i></span>
+    Frontend &amp; Docker
+  </h2>
+  <p class="slide-subtitle">Vanilla JS sans framework · 16 blocs · Docker multi-stage non-root</p>
+  <div class="slide-content">
+    <div class="card-row cols-2">
+      <div class="card">
+        <div class="ic"><i data-lucide="palette"></i></div>
+        <div class="h">interface/ — Vanilla JS premium</div>
+        <div class="b" style="margin-top:10px">~1 700 lignes · 16 blocs commentés · Chart.js horizontal bars · jsPDF · Lucide · localStorage</div>
+        <div class="badges" style="margin-top:14px">
+          <span class="badge"><i data-lucide="upload"></i> Drag & drop</span>
+          <span class="badge"><i data-lucide="eye"></i> Grad-CAM zoom</span>
+          <span class="badge"><i data-lucide="moon"></i> Dark mode</span>
+          <span class="badge"><i data-lucide="file-text"></i> Export PDF/PNG/CSV</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ic"><i data-lucide="container"></i></div>
+        <div class="h">Docker · production-ready</div>
+        <div class="b" style="margin-top:10px">Multi-stage Python 3.11-slim · ~1.5 GB final · utilisateur non-root · healthcheck intégré</div>
+        <div class="badges" style="margin-top:14px">
+          <span class="badge green"><i data-lucide="check"></i> docker compose up</span>
+          <span class="badge green"><i data-lucide="check"></i> Nginx serving frontend</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ic"><i data-lucide="layout"></i></div>
+        <div class="h">streamlit_app/ — Alternative</div>
+        <div class="b" style="margin-top:10px">Mono-fichier · 1 commande · idéal pour démos · Grad-CAM intégré · port 8501</div>
+      </div>
+      <div class="card">
+        <div class="ic"><i data-lucide="play"></i></div>
+        <div class="h">Démarrage en 1 commande</div>
+        <pre class="code" style="font-size:11px;margin-top:8px">$ python start.py
+<span class="c"># lance API + frontend + browser</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 28 — Tests + CI/CD ════════ -->
+<section class="slide">
+  <span class="slide-num">30 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="shield-check"></i></span>
+    Qualité du code
+  </h2>
+  <p class="slide-subtitle">17 tests pytest · CI/CD GitHub Actions · pre-commit hooks · Docker build validé</p>
+  <div class="slide-content">
+    <div class="card-row cols-3">
+      <div class="card">
+        <div class="ic"><i data-lucide="check-square"></i></div>
+        <div class="h">Tests pytest</div>
+        <div class="num green" style="margin-top:8px">17/17</div>
+        <div class="b" style="margin-top:6px">13 tests API E2E + 4 dataset_stats · ~10 secondes</div>
+      </div>
+      <div class="card">
+        <div class="ic"><i data-lucide="git-merge"></i></div>
+        <div class="h">CI GitHub Actions</div>
+        <div class="b" style="margin-top:8px">Pipeline 3 jobs séquentiels :</div>
+        <div class="badges" style="margin-top:14px">
+          <span class="badge cyan">lint (ruff + black)</span>
+          <span class="badge cyan">test (pytest)</span>
+          <span class="badge cyan">docker build</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ic"><i data-lucide="git-commit"></i></div>
+        <div class="h">Pre-commit hooks</div>
+        <div class="b" style="margin-top:8px">Auto-format avant push :</div>
+        <div class="badges" style="margin-top:14px">
+          <span class="badge">trailing-whitespace</span>
+          <span class="badge">large-files (max 500KB)</span>
+          <span class="badge">private-keys</span>
+          <span class="badge">ruff --fix</span>
+          <span class="badge">black</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-row cols-2" style="margin-top:18px">
+      <div class="card">
+        <div class="h">Configuration centralisée</div>
+        <div class="b" style="margin-top:8px">pyproject.toml · pytest.ini · .env.example · .gitattributes (Git LFS)</div>
+      </div>
+      <div class="card">
+        <div class="h">Documentation exhaustive</div>
+        <div class="b" style="margin-top:8px">17 READMEs détaillés + 17 FLOW.md visuels · ~6 400 lignes au total</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 29 — Le projet en chiffres ════════ -->
+<section class="slide">
+  <span class="slide-num">31 / 32</span>
+  <h2 class="slide-title">
+    <span class="icon-wrap"><i data-lucide="trophy"></i></span>
+    Le projet en chiffres
+  </h2>
+  <p class="slide-subtitle">Tableau de bord récapitulatif</p>
+  <div class="slide-content">
+    <div class="card-row cols-4">
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">98.96%</div><div class="l">Test accuracy</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">22</div><div class="l">Analyses modulaires</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--green)">17/17</div><div class="l">Tests passing</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">7</div><div class="l">Endpoints REST</div></div>
+      <div class="stat-tile"><div class="v" style="color:#a78bfa">24.6M</div><div class="l">Paramètres modèle</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--orange)">~10ms</div><div class="l">Inférence GPU</div></div>
+      <div class="stat-tile"><div class="v" style="color:#a78bfa">2</div><div class="l">Frontends (FastAPI+Streamlit)</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">17</div><div class="l">READMEs détaillés</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">17</div><div class="l">FLOW.md visuels</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--cyan-2)">6.4k</div><div class="l">Lignes documentation</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--green)">Docker</div><div class="l">Multi-stage ready</div></div>
+      <div class="stat-tile"><div class="v" style="color:var(--green)">CI/CD</div><div class="l">GitHub Actions ✅</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SLIDE 30 — MERCI ════════ -->
+<section class="slide cover">
+  <span class="slide-num">32 / 32</span>
+  <div class="brain-logo"><i data-lucide="brain"></i></div>
+  <h1 style="font-size:80px">Merci !</h1>
+  <p class="tagline">Questions · Démo en direct · Discussion technique</p>
+  <div class="meta" style="margin-top:32px">
+    <span class="pill"><i data-lucide="github"></i> github.com/iliass06/Brain-Tumor-project</span>
+    <span class="pill"><i data-lucide="rocket"></i> python start.py</span>
+    <span class="pill"><i data-lucide="globe"></i> localhost:3000</span>
+  </div>
+  <div style="margin-top:48px;padding:18px 32px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:14px;max-width:600px">
+    <p style="font-size:13px;color:var(--orange);text-align:center"><strong>⚠ Avertissement médical</strong> — Cet outil est destiné à un usage éducatif et de recherche uniquement. Il ne remplace pas un diagnostic médical professionnel.</p>
+  </div>
+</section>
+
+</div>
+
+<!-- ═══ NAVIGATION ═══ -->
+<div class="nav">
+  <button id="first" title="Première (Home)"><i data-lucide="chevrons-left"></i></button>
+  <button id="prev"  title="Précédente (←)"><i data-lucide="chevron-left"></i></button>
+  <span class="counter" id="counter">1 / 30</span>
+  <button id="next"  title="Suivante (→ ou ESPACE)"><i data-lucide="chevron-right"></i></button>
+  <button id="last"  title="Dernière (End)"><i data-lucide="chevrons-right"></i></button>
+  <button id="full"  title="Plein écran (F)"><i data-lucide="maximize"></i></button>
+  <button id="print" title="Imprimer / PDF (P)"><i data-lucide="printer"></i></button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let cur = 0;
+
+const counter = document.getElementById('counter');
+const progress = document.getElementById('progress');
+const btnFirst = document.getElementById('first');
+const btnPrev  = document.getElementById('prev');
+const btnNext  = document.getElementById('next');
+const btnLast  = document.getElementById('last');
+const btnFull  = document.getElementById('full');
+const btnPrint = document.getElementById('print');
+
+function show(i){
+  cur = Math.max(0, Math.min(total-1, i));
+  slides.forEach((s,idx)=>{
+    s.classList.remove('active','prev');
+    if(idx===cur) s.classList.add('active');
+    else if(idx<cur) s.classList.add('prev');
+  });
+  counter.textContent = `${cur+1} / ${total}`;
+  progress.style.width = `${((cur+1)/total)*100}%`;
+  btnFirst.disabled = cur===0;
+  btnPrev.disabled  = cur===0;
+  btnNext.disabled  = cur===total-1;
+  btnLast.disabled  = cur===total-1;
+  // Renumber slides
+  slides.forEach((s,idx)=>{const n=s.querySelector('.slide-num');if(n)n.textContent = String(idx+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');});
+}
+
+btnFirst.onclick = ()=>show(0);
+btnPrev.onclick  = ()=>show(cur-1);
+btnNext.onclick  = ()=>show(cur+1);
+btnLast.onclick  = ()=>show(total-1);
+btnFull.onclick  = ()=>{
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+};
+btnPrint.onclick = ()=>window.print();
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown') {e.preventDefault();show(cur+1);}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp') {e.preventDefault();show(cur-1);}
+  else if(e.key==='Home') show(0);
+  else if(e.key==='End')  show(total-1);
+  else if(e.key==='f'||e.key==='F') btnFull.click();
+  else if(e.key==='p'||e.key==='P') btnPrint.click();
+});
+
+// Touch swipe
+let touchX=null;
+document.addEventListener('touchstart',e=>{touchX=e.changedTouches[0].screenX});
+document.addEventListener('touchend',e=>{
+  if(touchX===null)return;
+  const dx = e.changedTouches[0].screenX - touchX;
+  if(Math.abs(dx)>60){ if(dx<0) show(cur+1); else show(cur-1); }
+  touchX=null;
+});
+
+// Init
+show(0);
+lucide.createIcons();
+</script>
+</body>
+</html>

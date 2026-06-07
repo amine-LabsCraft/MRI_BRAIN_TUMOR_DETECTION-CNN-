@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: brainscan-ai:latest
+    container_name: brainscan-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - BRAINSCAN_CORS_ORIGINS=*
+      - BRAINSCAN_RATE_LIMIT=60
+      - BRAINSCAN_LOG_LEVEL=INFO
+      # Uncomment to enable API key authentication
+      # - BRAINSCAN_API_KEY=change-me-in-prod
+    volumes:
+      # Mount only the model checkpoint (read-only) — everything else lives in the image
+      - ./models:/app/models:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  web:
+    image: nginx:alpine
+    container_name: brainscan-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./interface:/usr/share/nginx/html:ro
+    depends_on:
+      - api

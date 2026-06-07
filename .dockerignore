@@ -1,0 +1,42 @@
+# ─── Don't copy these into the image ───
+.git/
+.github/
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Large directories
+data/
+logs/
+results/
+docs/
+dataset_stats/outputs/
+dataset_stats/figures/
+streamlit_app/      # not needed in API image
+scripts/            # CLI scripts not needed in API image
+tests/
+legacy/
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Other
+*.log
+*.bak
+.env
+.env.local
+.coverage
+htmlcov/
+README.md
+*.md
+!api/README.md

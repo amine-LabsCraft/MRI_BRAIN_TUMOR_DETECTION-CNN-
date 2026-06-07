@@ -1,0 +1,171 @@
+% ╔══════════════════════════════════════════════════════════════════════╗
+% ║   TP6 — Partie 5 : Rédaction de l'approche proposée                  ║
+% ║   Projet : BrainScan AI — Classification IRM cérébrales (ResNet50)   ║
+% ║   ENSA Khouribga — IID1 — 2025/2026                                  ║
+% ║                                                                      ║
+% ║   Format : section "Proposed Approach" d'un article scientifique     ║
+% ║   Style  : paragraphes rédigés, sans listes à puces                  ║
+% ╚══════════════════════════════════════════════════════════════════════╝
+
+\documentclass[11pt,a4paper,oneside]{article}
+
+% ─── Encoding & Language ────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% ─── Layout ─────────────────────────────────────────────────────────────
+\usepackage[a4paper, margin=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+\usepackage{microtype}
+\raggedbottom
+
+% ─── Color palette ──────────────────────────────────────────────────────
+\usepackage[table]{xcolor}
+\definecolor{navy}{HTML}{0A2540}
+\definecolor{navylight}{HTML}{0F3460}
+\definecolor{cyan}{HTML}{00D4AA}
+\definecolor{cyandark}{HTML}{00B894}
+\definecolor{lightgray}{HTML}{F1F5F9}
+\definecolor{darkgray}{HTML}{475569}
+
+% ─── Typography ─────────────────────────────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{navy}}
+  {\thesection}{1em}{}
+  [\vspace{0.2ex}{\color{cyan}\titlerule[0.5pt]}]
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{navylight}}
+  {\thesubsection}{0.8em}{}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+% ─── Boxes ──────────────────────────────────────────────────────────────
+\usepackage[most]{tcolorbox}
+\newtcolorbox{successbox}[1][]{
+  enhanced, breakable,
+  colback=green!5, colframe=cyandark,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title=#1, arc=4pt,
+}
+
+% ─── Hyperlinks ─────────────────────────────────────────────────────────
+\usepackage[hidelinks, colorlinks=true, linkcolor=navy, urlcolor=cyandark]{hyperref}
+
+% ─── Header / Footer ────────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{navy}{\small TP6 — Partie 5 : Approche proposée}}
+\fancyhead[R]{\textcolor{cyandark}{\small\bfseries BrainScan AI}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\usepackage{graphicx}
+\newcommand{\code}[1]{\texttt{\textcolor{navy}{#1}}}
+
+% ════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ─── Title block ────────────────────────────────────────────────────────
+\begin{center}
+{\color{cyan}\rule{\textwidth}{1.5pt}}\\[0.6cm]
+{\large\bfseries Université Sultan My Slimane — ENSA Khouribga}\\[0.2cm]
+{\normalsize Filière IID1 — Méthodologie de projet et veille scientifique}\\[0.6cm]
+{\Huge\bfseries\color{navy} TP6 — Partie 5}\\[0.3cm]
+{\Large\bfseries\color{navylight} Rédaction de l'approche proposée}\\[0.3cm]
+{\large\itshape\color{darkgray} Projet support : BrainScan AI — Classification d'IRM cérébrales par ResNet50}\\[0.4cm]
+{\color{cyan}\rule{0.6\textwidth}{0.8pt}}\\[0.3cm]
+{\normalsize\color{darkgray} \today}
+\end{center}
+
+\vspace{0.6cm}
+
+% ════════════════════════════════════════════════════════════════════════
+% APPROCHE PROPOSÉE
+% ════════════════════════════════════════════════════════════════════════
+
+\section*{Avant-propos}
+
+Cette section est rédigée dans le format d'une rubrique \emph{Proposed Approach} d'un article scientifique. Elle décrit, sous une forme rédigée et continue, le pipeline complet que nous proposons pour la classification automatique d'images IRM cérébrales en quatre catégories (Glioma, Méningiome, Aucune tumeur, Hypophysaire), à partir d'un modèle ResNet50 entraîné par \emph{transfer learning} sur le dataset Kaggle \emph{Brain Tumor Classification MRI}. Le projet étant à ce jour en \textbf{phase de développement avancé}, les résultats reportés ont un caractère préliminaire et seront consolidés par une procédure de validation croisée dans les semaines à venir.
+
+\section{Vue générale de l'approche}
+
+L'approche proposée repose sur l'idée fondatrice que, sur un jeu de données médical de taille modérée (environ sept mille images), un \emph{transfer learning} soigneusement orchestré à partir d'un réseau pré-entraîné sur ImageNet surpasse de très loin un apprentissage \emph{from scratch}. Plus précisément, nous adoptons un schéma en cinq phases enchaînées qui forment un pipeline reproductible de bout en bout. La première phase est celle de l'\textbf{acquisition et du prétraitement} : les images JPEG et PNG brutes provenant du dataset Kaggle sont validées, harmonisées en RGB trois canaux, redimensionnées en deux temps à la résolution standard de 224 par 224 pixels attendue par ResNet50, puis normalisées par les statistiques ImageNet et sérialisées au format NumPy binaire pour accélérer le chargement. La deuxième phase consiste en une \textbf{augmentation à la volée} appliquée exclusivement au sous-ensemble d'entraînement à l'aide de la bibliothèque Albumentations ; cette augmentation crée à chaque \emph{batch} des variations géométriques et photométriques qui multiplient virtuellement la taille du dataset sans aucun coût de stockage supplémentaire. La troisième phase est l'\textbf{entraînement en deux stages} du modèle : un premier stage d'adaptation rapide de la tête de classification avec le backbone gelé, suivi d'un second stage de fine-tuning précis avec un dégel partiel du backbone et un learning rate dix fois plus petit. La quatrième phase est celle de l'\textbf{évaluation} sur un test set indépendant à l'aide d'un ensemble complet de métriques (accuracy, precision, recall, F1, ROC-AUC, courbes precision-recall, calibration). Enfin, la cinquième phase consiste au \textbf{déploiement} du modèle via une API REST FastAPI, qui retourne pour chaque prédiction une carte d'attention Grad-CAM permettant de visualiser les régions de l'image ayant motivé la décision du réseau.
+
+L'ensemble du pipeline est conçu autour de trois principes directeurs. Le premier est la \textbf{modularité} : chaque phase correspond à un module Python autonome, dont l'interface est stable et qui peut être substitué ou amélioré indépendamment des autres. Le deuxième est la \textbf{reproductibilité} : toutes les sources d'aléa sont contrôlées par une seed unique fixée à quarante-deux, les versions des dépendances sont verrouillées dans un fichier \code{requirements.txt}, et l'ensemble des hyperparamètres est centralisé dans une unique fonction \code{get\_default\_config()}. Le troisième principe est l'\textbf{interprétabilité} : la décision finale du modèle n'est jamais présentée seule à l'utilisateur ; elle est systématiquement accompagnée d'une carte de chaleur Grad-CAM, condition que nous considérons indispensable dans un contexte applicatif médical où l'utilisateur final doit pouvoir comprendre, vérifier et éventuellement contester la prédiction du réseau.
+
+\section{Prétraitement des données}
+
+Le module de prétraitement transforme les images JPEG et PNG du dataset Kaggle en tenseurs PyTorch directement consommables par ResNet50. Cette transformation est conçue pour répondre à trois objectifs simultanés : éliminer les fichiers défectueux ou non conformes, harmoniser tous les exemples dans un format unique compatible avec le backbone pré-entraîné, et accélérer le chargement durant l'entraînement.
+
+La première opération est une \textbf{phase de validation et de nettoyage}. Chaque fichier candidat est ouvert avec \code{PIL.Image.open()}, ce qui permet de détecter automatiquement les fichiers corrompus, tronqués ou non conformes. Les images de taille inférieure à trente-deux par trente-deux pixels sont écartées car elles ne contiennent pas suffisamment d'information visuelle, et seuls les types MIME JPEG, JPG et PNG sont conservés. Cette validation, exécutée une seule fois en pré-traitement, garantit qu'aucune erreur ne surviendra plus tard durant l'entraînement, ce qui aurait pour effet d'interrompre des heures de calcul sur GPU.
+
+La deuxième opération est une \textbf{harmonisation du format couleur}. Le dataset Kaggle contient des images mixant grayscale (un canal), RGB (trois canaux) et plus rarement RGBA (quatre canaux). Or ResNet50 attend exclusivement trois canaux. Les images grayscale sont donc dupliquées sur trois canaux identiques, et les images RGBA voient leur canal alpha supprimé. Cette étape, banale en apparence, conditionne en réalité toute la suite du pipeline : sans elle, le réseau lèverait une erreur de dimension dès le premier batch.
+
+La troisième opération est le \textbf{redimensionnement géométrique}. Plutôt qu'un redimensionnement direct vers 224 par 224 — qui aurait l'inconvénient de déformer les images dont le ratio d'aspect n'est pas carré — nous procédons en deux temps. La fonction \code{Resize(256)} préserve le ratio d'aspect et fixe la dimension du côté court à 256 pixels. La fonction \code{CenterCrop(224)} extrait ensuite un carré central de 224 par 224 pixels. Cette double opération a deux avantages : elle évite toute déformation anatomique des structures cérébrales, et elle laisse aux étapes d'augmentation suivantes une petite marge de manœuvre pour effectuer des recadrages aléatoires sans introduire de pixels noirs aux bords.
+
+La quatrième opération est la \textbf{normalisation statistique}. Les valeurs de pixels, initialement entières dans l'intervalle de zéro à deux cent cinquante-cinq, sont converties en \code{float32} dans l'intervalle de zéro à un. Elles sont ensuite normalisées par les statistiques d'ImageNet, c'est-à-dire en soustrayant le vecteur de moyennes \(\mu = (0.485, 0.456, 0.406)\) et en divisant par le vecteur d'écarts-types \(\sigma = (0.229, 0.224, 0.225)\), canal par canal. Cette normalisation est absolument cruciale en transfer learning : elle ramène les images de notre domaine médical dans la même distribution statistique que celle vue par ResNet50 lors de son pré-entraînement sur les images naturelles d'ImageNet, ce qui permet au backbone de produire des features cohérentes dès le premier passage avant.
+
+La cinquième opération est l'\textbf{encodage des labels} en indices entiers selon le mapping \(\{\text{Glioma} \to 0,~ \text{Meningioma} \to 1,~ \text{No Tumor} \to 2,~ \text{Pituitary} \to 3\}\). Nous n'utilisons pas d'encodage \emph{one-hot} car la fonction de perte \code{CrossEntropyLoss} de PyTorch accepte directement les indices entiers et applique en interne la transformation appropriée, ce qui est à la fois plus économe en mémoire et numériquement plus stable.
+
+Enfin, la sixième et dernière opération est une \textbf{sérialisation au format NumPy binaire} (\code{.npy}). Plutôt que de relire et décoder un fichier JPEG à chaque batch — opération coûteuse car elle implique une décompression entropique — chaque image est sauvegardée une fois pour toutes sous forme de tableau \code{float32} déjà normalisé. Cette astuce, simple en apparence, accélère le chargement par un facteur d'environ quatre, ce qui a un impact direct sur la durée totale de l'entraînement, en particulier sur CPU.
+
+À ces six opérations appliquées à toutes les images s'ajoute une \textbf{procédure d'augmentation à la volée} qui ne concerne que le train set. Lors de chaque époque, chaque image d'entraînement est passée par une chaîne de transformations stochastiques issues de la bibliothèque Albumentations : un retournement horizontal avec probabilité 0.5, une rotation de quatre-vingt-dix degrés avec probabilité 0.3, une rotation libre dans la plage \(\pm 15°\) avec probabilité 0.4, un recadrage redimensionné aléatoire (\code{RandomResizedCrop}) à l'échelle 0.85--1.0, un ajustement de luminosité et de contraste à plus ou moins vingt pour cent avec probabilité 0.4, un bruit gaussien avec probabilité 0.2, et une déformation élastique avec probabilité 0.2. Le choix d'Albumentations plutôt que des transformations natives de \code{torchvision} se justifie par un facteur de vitesse d'environ dix sur GPU, ce qui est particulièrement précieux quand on dispose d'une carte modeste de quatre gigaoctets de VRAM. Le val et le test set, en revanche, ne subissent que la normalisation décrite plus haut, afin de garantir une évaluation strictement déterministe.
+
+\section{Architecture proposée}
+
+L'architecture proposée combine un \textbf{backbone ResNet50 pré-entraîné sur ImageNet} avec une \textbf{tête de classification personnalisée} adaptée à notre problème à quatre classes. Le total des paramètres se monte à environ vingt-quatre virgule six millions, dont vingt-trois virgule cinq millions dans le backbone et un virgule zéro cinq million dans la tête custom.
+
+Le choix de ResNet50 résulte d'une analyse comparative explicite que nous avons documentée dans la section \emph{Related Work}, et qui examine six architectures candidates (VGG16, Inception V3, ResNet50, DenseNet121, EfficientNet-B0 et Vision Transformer). Sept arguments convergents motivent la sélection de ResNet50. Premièrement, les \textbf{connexions résiduelles} introduites par He \emph{et al.} en 2016 permettent au gradient de se propager intactement vers les couches profondes via le chemin d'identité, ce qui rend l'entraînement remarquablement stable même sur cinquante couches. Mathématiquement, chaque bloc résiduel apprend une fonction \(F(x)\) telle que la sortie effective devient \(H(x) = F(x) + x\), où le terme additif \(x\) constitue un raccourci d'optimisation. Deuxièmement, le \textbf{compromis profondeur / nombre de paramètres} de ResNet50, avec ses vingt-cinq virgule six millions de paramètres officiels, est nettement plus favorable que celui de VGG16 (cent trente-huit millions) tout en étant plus performant en accuracy ImageNet. Cette légèreté relative est décisive dans notre cas, puisque nous travaillons sur une carte NVIDIA RTX 2050 dotée de seulement quatre gigaoctets de VRAM, ce qui exclut de facto les architectures plus lourdes comme VGG ou les variantes large des Vision Transformers. Troisièmement, plusieurs études récentes (Raghu \emph{et al.}, 2019 ; Cheplygina \emph{et al.}, 2019) ont montré que les features extraites par ResNet50 sur ImageNet se \textbf{transfèrent particulièrement bien aux domaines médicaux}, malgré l'écart de distribution évident entre images naturelles et images IRM. Quatrièmement, ResNet50 est devenu le \textbf{standard de facto en imagerie médicale}, ce qui facilite la comparaison avec l'état de l'art et le débogage. Cinquièmement, le \textbf{support natif de ResNet50 dans torchvision} permet d'instancier le modèle pré-entraîné en une seule ligne de code, sans téléchargement manuel ni conversion de format. Sixièmement, la couche \code{layer4[-1]} de ResNet50 constitue une \textbf{cible idéale pour Grad-CAM} : sa résolution spatiale de sept par sept est suffisante pour localiser une tumeur dans une image de 224 par 224, et ses deux mille quarante-huit canaux offrent une richesse sémantique remarquable. Septièmement, la \textbf{latence d'inférence} mesurée sur notre matériel est d'environ dix millisecondes par image sur GPU et trente-six millisecondes sur CPU, ce qui reste compatible avec un usage interactif.
+
+La tête de classification que nous greffons sur le backbone est volontairement minimaliste afin de limiter le risque de sur-apprentissage. Elle est constituée d'une première couche linéaire qui projette le vecteur de features de dimension deux mille quarante-huit vers une représentation intermédiaire de dimension cinq cent douze, suivie d'une activation ReLU. Une couche de normalisation par batch (\code{BatchNorm1d}) stabilise ensuite la distribution des activations, et un \emph{dropout} avec probabilité 0.4 introduit une régularisation stochastique forte. Enfin, une seconde couche linéaire projette cette représentation cinq cent douze vers la dimension de sortie quatre, qui correspond aux quatre classes médicales considérées. Une fonction \emph{softmax} appliquée hors du modèle (uniquement à l'inférence) transforme les logits en distribution de probabilités sommant à un.
+
+Un point central de l'architecture proposée est l'\textbf{intégration native d'un module d'interprétabilité Grad-CAM} sans recours à une bibliothèque externe. Notre implémentation s'appuie directement sur les \emph{hooks} de PyTorch. Concrètement, un \code{forward\_hook} attaché à \code{layer4[-1]} capture les activations produites par cette couche durant le passage avant, et un \code{full\_backward\_hook} capture les gradients reçus durant la rétropropagation conditionnée sur la classe prédite. La carte d'attention finale est ensuite obtenue en pondérant les cartes d'activation par la moyenne spatiale des gradients, puis en appliquant une ReLU et une normalisation min-max. Cette implémentation native, qui tient en moins de vingt lignes de Python, présente trois avantages : elle évite une dépendance externe supplémentaire, elle reste parfaitement synchronisée avec les évolutions futures de PyTorch, et elle peut être étendue trivialement à d'autres méthodes d'interprétabilité comme Grad-CAM++ ou Score-CAM.
+
+\section{Procédure d'entraînement}
+
+La procédure d'entraînement repose sur une stratégie de \textbf{transfer learning en deux stages successifs}, qui s'est révélée nettement plus stable et plus performante qu'un fine-tuning naïf appliqué d'un seul tenant. Cette supériorité a été quantifiée empiriquement durant nos expériences préliminaires : un fine-tuning naïf avec l'ensemble du backbone entraînable et un learning rate uniforme de \(10^{-3}\) (expérience E2 dans notre tableau de suivi) plafonne autour de 91~\% d'accuracy de validation avec des oscillations marquées de la \emph{loss}, alors que la stratégie en deux stages (expérience E3) atteint 97.8~\% avec des courbes lisses.
+
+Le \textbf{premier stage} dure vingt époques. Durant ce stage, l'intégralité du backbone ResNet50 est gelée, c'est-à-dire que les gradients ne se propagent pas au-delà de la dernière couche du backbone, et seuls les paramètres de la tête custom — environ un virgule zéro cinq million — sont mis à jour. Le learning rate est fixé à \(10^{-3}\), une valeur classique pour l'optimiseur Adam, qui permet à la tête (initialisée aléatoirement) de converger rapidement vers une représentation cohérente avec les features ImageNet du backbone. L'objectif méthodologique de ce premier stage est d'éviter le phénomène de \emph{catastrophic forgetting} : si l'on permettait dès le départ aux gradients de remonter dans le backbone alors que la tête est encore aléatoire, ces gradients destructeurs détérioreraient les features pré-entraînées qui constituent précisément la richesse initiale du modèle.
+
+Le \textbf{second stage} dure jusqu'à trente époques supplémentaires, avec un \emph{early stopping} de patience sept. Durant ce stage, les trente dernières couches du backbone sont dégelées en plus de la tête, ce qui porte le nombre de paramètres entraînables à environ quinze millions. Le learning rate est réduit d'un ordre de grandeur, passant de \(10^{-3}\) à \(10^{-4}\). Cette réduction est essentielle : un learning rate dix fois plus petit garantit que les ajustements apportés aux features bas-niveau du backbone restent modestes et n'effacent pas le savoir ImageNet, tout en permettant une adaptation fine à la spécificité du domaine médical. La logique sous-jacente est que la tête a, à ce stade, atteint une configuration raisonnable au terme du premier stage, ce qui rend les gradients qui se propagent vers le backbone informatifs plutôt que chaotiques.
+
+Trois mécanismes de \textbf{contrôle automatique} surveillent en permanence la \emph{validation loss} et interviennent en cas de stagnation ou de divergence. Le premier, \code{EarlyStopping}, interrompt l'entraînement dès qu'aucune amélioration n'est observée pendant sept époques consécutives, ce qui évite la sur-adaptation tardive et économise du temps de calcul. Le second, \code{ReduceLROnPlateau}, divise le learning rate par deux dès qu'une stagnation de trois époques est détectée, ce qui permet au modèle de descendre dans des bassins d'attraction plus étroits. Le troisième, \code{ModelCheckpoint}, ne sauvegarde sur disque que le \emph{meilleur} modèle au sens de la \emph{validation loss} minimale, garantissant que le modèle déployé en production n'est pas celui de la dernière époque (qui peut être légèrement dégradé) mais bien celui qui a généralisé le mieux durant l'entraînement.
+
+Un \textbf{mécanisme de compensation du déséquilibre des classes} complète le dispositif. Bien que notre dataset soit relativement équilibré (quatre classes contenant chacune entre mille trois cents et deux mille images), de petites variations de fréquence subsistent. Nous calculons donc, à partir du train set, un vecteur de poids inversement proportionnels aux fréquences de chaque classe, et nous l'injectons dans \code{CrossEntropyLoss} via son paramètre \code{weight}. Concrètement, ce mécanisme garantit qu'une erreur sur une classe sous-représentée pèse plus lourd dans la \emph{loss} qu'une erreur sur une classe sur-représentée, ce qui force le modèle à apprendre des features discriminantes pour toutes les classes plutôt que d'optimiser de manière paresseuse uniquement la classe majoritaire.
+
+Pour finir, la procédure assure une \textbf{reproductibilité stricte}. Toutes les sources d'aléa du pipeline sont contrôlées par une seed unique fixée à quarante-deux : \code{torch.manual\_seed(42)} pour PyTorch (y compris l'initialisation des poids de la tête custom et les sous-échantillonnages effectués par le \code{DataLoader}), \code{numpy.random.seed(42)} pour NumPy (y compris l'augmentation Albumentations), \code{random.seed(42)} pour le module standard de Python, et \code{random\_state=42} pour scikit-learn lors du split stratifié train / val / test. Combinée au verrouillage des versions de toutes les dépendances dans \code{requirements.txt}, cette discipline garantit qu'un tiers reproduisant l'expérience sur un matériel équivalent obtiendra des courbes d'entraînement et des résultats finaux exactement identiques.
+
+\section{Métriques d'évaluation}
+
+L'évaluation du modèle final se fait sur le \emph{test set} de mille cinquante-quatre images, qui n'ont été vues à aucun moment durant les phases d'entraînement et de validation. Plutôt que de nous contenter d'une unique métrique synthétique, nous reportons un ensemble cohérent et complémentaire de mesures, dans la mesure où chacune éclaire un aspect différent de la qualité du modèle.
+
+L'\textbf{accuracy} globale, qui mesure la proportion de prédictions correctes parmi toutes les prédictions, constitue la métrique principale rapportée. Elle est ici significative parce que les quatre classes sont approximativement équilibrées, ce qui n'aurait pas été le cas sur un dataset déséquilibré comme la détection de pathologies rares. La \textbf{precision} mesure, classe par classe, la proportion de prédictions positives qui se révèlent effectivement correctes, c'est-à-dire la capacité du modèle à ne pas générer de fausses alertes ; cette métrique est particulièrement importante en contexte médical car une fausse alerte (un faux positif) entraîne typiquement des examens complémentaires coûteux et anxiogènes pour le patient. Le \textbf{recall} mesure, à l'inverse, la proportion de vrais positifs effectivement détectés, c'est-à-dire la capacité du modèle à ne pas manquer une tumeur réellement présente ; en imagerie médicale, le coût d'un faux négatif est en général plus élevé que celui d'un faux positif, ce qui justifie de surveiller le recall avec une attention particulière. Le \textbf{F1-score}, défini comme la moyenne harmonique de precision et recall, fournit un compromis synthétique entre les deux. Le \textbf{macro F1-score}, calculé comme la moyenne non pondérée des F1 par classe, accorde la même importance à chaque classe quel que soit son support, ce qui est utile pour repérer une classe systématiquement mal traitée.
+
+La \textbf{matrice de confusion} complète l'analyse en révélant les confusions systématiques entre classes : par exemple, dans notre expérience E4 actuelle, on observe que les onze erreurs résiduelles concernent majoritairement la paire \emph{glioma} -- \emph{meningioma}, ce qui correspond bien à la réalité radiologique où ces deux types de tumeurs partagent des signatures d'imagerie comparables. Les \textbf{courbes ROC} (one-vs-rest) tracent, pour chaque classe, le taux de vrais positifs en fonction du taux de faux positifs en faisant varier le seuil de décision ; l'aire sous la courbe (AUC) quantifie la capacité du modèle à séparer la classe considérée des trois autres, indépendamment du seuil choisi. Les \textbf{courbes precision-recall} et l'\emph{Average Precision} associée fournissent une information complémentaire, parfois plus discriminante que l'AUC ROC en présence de classes mal équilibrées.
+
+Une métrique particulièrement importante dans un contexte médical est la \textbf{calibration} du modèle, c'est-à-dire l'adéquation entre les probabilités prédites par le réseau et les fréquences réelles d'erreur. Concrètement, si le modèle annonce une confiance de quatre-vingt-dix pour cent, on attend que parmi toutes les prédictions ainsi annoncées, environ quatre-vingt-dix pour cent soient effectivement correctes. Cette propriété est mesurée par le \emph{Brier score} et visualisée par un \emph{reliability diagram}. Un modèle bien calibré permet d'utiliser ses probabilités comme estimation honnête de confiance, ce qui ouvre la voie à des stratégies de production telles que le seuillage à haute confiance (par exemple, ne renvoyer une décision automatique qu'au-dessus de quatre-vingt-quinze pour cent de probabilité, et déférer les cas plus incertains à une révision humaine).
+
+Enfin, nous reportons également la \textbf{latence d'inférence}, mesurée à la fois sur CPU et sur GPU. Cette métrique, parfois négligée dans les articles académiques, est en pratique décisive pour le déploiement : un modèle qui requiert plus d'une seconde par image perd une part importante de son intérêt dans un contexte interactif où plusieurs prédictions peuvent être nécessaires en cascade.
+
+\begin{successbox}[Résultats préliminaires obtenus (configuration E4)]
+Avec la configuration retenue à ce stade du développement — ResNet50 fine-tuné en deux stages, augmentation Albumentations, class weights, dropout 0.4 — le modèle atteint une test accuracy de \textbf{98.96~\%} (mille quarante-trois prédictions correctes sur mille cinquante-quatre), un macro F1-score de 0.99, un AUC moyen (one-vs-rest) de 0.999, et un Brier score d'environ 0.0085, indiquant une calibration excellente. La latence d'inférence est mesurée à environ dix millisecondes par image sur GPU NVIDIA RTX 2050 et trente-six millisecondes par image sur CPU Intel Core i7. Ces chiffres restent à confirmer par une procédure de validation croisée \(k\)-fold (\(k=5\)) prévue pour la phase finale du projet, ainsi que par une validation externe sur un second dataset (BraTS ou TCGA-GBM) pour mesurer la robustesse hors-distribution.
+\end{successbox}
+
+% ────────────────────────────────────────────────────────────────────────
+\vspace{1cm}
+
+\begin{center}
+{\color{cyan}\rule{0.6\textwidth}{1pt}}\\[0.5cm]
+{\bfseries\color{navy} TP6 — Partie 5 — Approche proposée}\\
+{\itshape\color{darkgray} BrainScan AI · ENSA Khouribga · IID1 · 2025/2026}\\[0.3cm]
+\textit{Fin du document — \today}
+\end{center}
+
+\end{document}

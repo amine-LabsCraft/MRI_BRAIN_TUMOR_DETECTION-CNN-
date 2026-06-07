@@ -1,0 +1,5 @@
+
+cd C:\Users\amine\OneDrive\Documents\mri_brain_tumor-main
+
+
+venv\Scripts\python.exe start.py

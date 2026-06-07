@@ -1,0 +1,1044 @@
+% ╔══════════════════════════════════════════════════════════════════════╗
+% ║   TP6 — Méthodologie de projet et veille scientifique                ║
+% ║   Implémentation, suivi des expériences et rédaction de l'approche   ║
+% ║   Projet : BrainScan AI — Classification IRM cérébrales (ResNet50)   ║
+% ║   ENSA Khouribga — IID1 — 2025/2026                                  ║
+% ╚══════════════════════════════════════════════════════════════════════╝
+
+\documentclass[11pt,a4paper,oneside]{report}
+
+% ─── Encoding & Language ────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% ─── Layout ─────────────────────────────────────────────────────────────
+\usepackage[a4paper, margin=2.2cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+\usepackage{microtype}
+\raggedbottom
+\let\cleardoublepage\clearpage
+
+% ─── Color palette ──────────────────────────────────────────────────────
+\usepackage[table]{xcolor}   % [table] active \rowcolor (via colortbl)
+\definecolor{navy}{HTML}{0A2540}
+\definecolor{navylight}{HTML}{0F3460}
+\definecolor{cyan}{HTML}{00D4AA}
+\definecolor{cyandark}{HTML}{00B894}
+\definecolor{accentred}{HTML}{EF4444}
+\definecolor{accentorange}{HTML}{F59E0B}
+\definecolor{accentgreen}{HTML}{10B981}
+\definecolor{accentblue}{HTML}{3B82F6}
+\definecolor{lightgray}{HTML}{F1F5F9}
+\definecolor{darkgray}{HTML}{475569}
+
+% ─── Typography ─────────────────────────────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{navy}}
+  {\filleft\Large\textcolor{cyandark}{Partie~\thechapter}}
+  {0.6ex}
+  {\titlerule[1pt]\vspace{0.6ex}\filright}
+  [\vspace{0.3ex}{\titlerule[0.4pt]}]
+\titlespacing*{\chapter}{0pt}{-25pt}{14pt}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{navy}}
+  {\thesection}{1em}{}
+  [\vspace{0.2ex}{\color{cyan}\titlerule[0.5pt]}]
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{navylight}}
+  {\thesubsection}{0.8em}{}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+
+% ─── Tables ─────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{makecell}
+\renewcommand{\arraystretch}{1.3}
+
+% ─── Code listings ──────────────────────────────────────────────────────
+\usepackage{listings}
+\lstdefinelanguage{Python}{
+  keywords={def, class, return, if, else, for, while, in, import, from, as, with, try, except, True, False, None, self},
+  keywordstyle=\color{accentblue}\bfseries,
+  sensitive=true,
+  comment=[l]{\#},
+  commentstyle=\color{darkgray}\itshape,
+  morestring=[b]",
+  morestring=[b]',
+  stringstyle=\color{accentgreen},
+}
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{darkgray},
+  backgroundcolor=\color{lightgray},
+  frame=leftline,
+  framerule=2pt,
+  rulecolor=\color{cyan},
+  breaklines=true,
+  tabsize=4,
+  captionpos=b,
+}
+
+% ─── Boxes ──────────────────────────────────────────────────────────────
+\usepackage[most]{tcolorbox}
+\newtcolorbox{infobox}[1][]{
+  enhanced, breakable,
+  colback=lightgray, colframe=cyandark,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title=#1, arc=4pt,
+}
+\newtcolorbox{warningbox}[1][]{
+  enhanced, breakable,
+  colback=yellow!10, colframe=accentorange,
+  fonttitle=\bfseries, title=#1, arc=4pt,
+}
+\newtcolorbox{successbox}[1][]{
+  enhanced, breakable,
+  colback=green!5, colframe=accentgreen,
+  fonttitle=\bfseries, title=#1, arc=4pt,
+}
+
+% ─── Hyperlinks ─────────────────────────────────────────────────────────
+\usepackage[hidelinks, colorlinks=true, linkcolor=navy, urlcolor=cyandark]{hyperref}
+
+% ─── Header / Footer ───────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{navy}{\small TP6 — BrainScan AI}}
+\fancyhead[R]{\textcolor{cyandark}{\small\bfseries ENSA Khouribga · IID1}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*, itemsep=2pt}
+\usepackage{graphicx}
+\usepackage{float}
+
+\newcommand{\code}[1]{\texttt{\textcolor{navy}{#1}}}
+
+% ════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ════════════════════════════════════════════════════════════════════════
+% PAGE DE GARDE
+% ════════════════════════════════════════════════════════════════════════
+\begin{titlepage}
+\centering
+\vspace*{1cm}
+
+{\large\bfseries Université Sultan My Slimane}\\[0.2cm]
+{\large École Nationale des Sciences Appliquées}\\[0.2cm]
+{\large ENSA Khouribga}\\[0.2cm]
+{\large Filière IID1 — Année universitaire 2025/2026}\\[1cm]
+
+{\color{cyan}\rule{\textwidth}{1.5pt}}
+
+\vspace{1cm}
+
+{\Large\bfseries\color{darkgray}\itshape Méthodologie de projet et veille scientifique}\\[0.6cm]
+
+{\Huge\bfseries\color{navy} TP6}\\[0.4cm]
+
+{\LARGE\bfseries\color{navylight} Implémentation, suivi des expériences\\ et rédaction de l'approche proposée}
+
+\vspace{1cm}
+
+{\color{cyan}\rule{0.6\textwidth}{0.8pt}}
+
+\vspace{1cm}
+
+{\large\bfseries\color{cyandark} Projet d'application :}\\[0.4cm]
+{\LARGE\bfseries\color{navy} BrainScan AI}\\[0.2cm]
+{\large\itshape Détection et classification de tumeurs cérébrales par IRM}\\[0.4cm]
+{\large ResNet50 · Transfer Learning · Grad-CAM · 98.96\% accuracy}
+
+\vfill
+
+\begin{tabular}{rl}
+{\bfseries\color{navy} Modèle :} & ResNet50 (Transfer Learning ImageNet) \\
+{\bfseries\color{navy} Framework :} & PyTorch 2.11 \\
+{\bfseries\color{navy} Dataset :} & Brain Tumor MRI (Kaggle) — 7\,023 images \\
+{\bfseries\color{navy} Performance :} & \textbf{\color{accentgreen} 98.96\%} sur le test set \\
+\end{tabular}
+
+\vspace{1cm}
+
+{\color{cyan}\rule{\textwidth}{1.5pt}}
+
+\vspace{0.5cm}
+
+{\large\color{darkgray} \today}
+
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+% ════════════════════════════════════════════════════════════════════════
+% INTRODUCTION
+% ════════════════════════════════════════════════════════════════════════
+\chapter*{Introduction}
+\addcontentsline{toc}{chapter}{Introduction}
+
+Ce rapport présente le travail effectué dans le cadre du \textbf{TP6} de la matière \emph{Méthodologie de projet et veille scientifique}. Il documente, de façon scientifique et reproductible, l'implémentation d'un pipeline de \textbf{Deep Learning} appliqué à la classification d'images IRM cérébrales.
+
+Le projet support — \textbf{BrainScan AI} — vise à classifier automatiquement les IRM cérébrales en quatre catégories médicales (Glioma, Méningiome, Aucune tumeur, Hypophysaire) à partir d'un modèle ResNet50 entraîné par \emph{transfer learning}. Le projet est actuellement \textbf{en phase de développement} : ce TP6 constitue un \textbf{point d'étape intermédiaire} permettant de formaliser les choix techniques, de documenter les expériences déjà menées et d'identifier les axes d'amélioration restants avant la livraison finale.
+
+\begin{infobox}[Statut d'avancement au moment de la rédaction]
+\begin{itemize}
+  \item \textbf{Environnement} : entièrement configuré et fonctionnel (PyTorch, CUDA, dépendances verrouillées).
+  \item \textbf{Pipeline de données} : implémenté de bout en bout, validé sur le dataset Kaggle complet.
+  \item \textbf{Modèle} : architecture ResNet50 + tête custom implémentée et fonctionnelle.
+  \item \textbf{Expériences} : six configurations testées (E1 à E4), résultats préliminaires entre 76 \% et 98.96 \% d'accuracy selon la configuration.
+  \item \textbf{Travaux restants} : cross-validation k-fold, étude d'ablation systématique, ensemble de modèles, déploiement final, validation sur un second dataset externe (BraTS).
+\end{itemize}
+\end{infobox}
+
+Le rapport est structuré selon les cinq parties imposées par le TP, précédées d'un court état de l'art mettant en relief les arguments en faveur du choix de \textbf{ResNet50} :
+\begin{itemize}
+  \item \textbf{État de l'art (Related Work)} — panorama des approches existantes et justification du choix de ResNet50.
+  \item \textbf{Partie 1} — Environnement d'implémentation (langage, framework, matériel, versions).
+  \item \textbf{Partie 2} — Implémentation du pipeline (chargement, prétraitement, augmentation, entraînement, évaluation).
+  \item \textbf{Partie 3} — Configuration expérimentale (hyperparamètres, splits, expériences).
+  \item \textbf{Partie 4} — Suivi des expériences et difficultés rencontrées.
+  \item \textbf{Partie 5} — Rédaction de l'approche proposée (style article scientifique).
+\end{itemize}
+
+% ════════════════════════════════════════════════════════════════════════
+% RELATED WORK
+% ════════════════════════════════════════════════════════════════════════
+\chapter{État de l'art (Related Work)}
+
+\section{Panorama des approches de classification IRM cérébrales}
+
+La classification automatique des tumeurs cérébrales par IRM est un problème largement étudié dans la littérature, qui a vu plusieurs vagues méthodologiques se succéder. On peut en distinguer trois grandes familles d'approches.
+
+\subsection{Approches classiques (avant 2015)}
+
+Les premières approches reposaient sur l'\textbf{extraction manuelle de caractéristiques} (texture GLCM, ondelettes, HOG, LBP) suivie d'un classifieur traditionnel (SVM, Random Forest, k-NN). Ces méthodes présentent plusieurs limites majeures :
+
+\begin{itemize}
+  \item Les descripteurs doivent être conçus à la main par un expert.
+  \item Elles capturent mal les relations spatiales complexes propres aux IRM.
+  \item Les performances plafonnent généralement autour de 85 \% sur des datasets médicaux modérés.
+  \item Elles ne sont pas génériques : un descripteur efficace pour distinguer Glioma/Méningiome peut être inefficace pour Pituitary.
+\end{itemize}
+
+\subsection{Approches Deep Learning \emph{from scratch} (2015--2017)}
+
+Les premiers CNN dédiés à la classification IRM ont été entraînés \emph{from scratch} : architectures avec 3 à 6 couches de convolution suivies de couches denses. Le problème majeur est le \textbf{manque de données} : un dataset médical compte typiquement quelques milliers d'images, alors qu'un CNN profond nécessite des centaines de milliers d'exemples pour bien généraliser. Conséquence directe : \textbf{overfitting massif} et accuracy plafonnant autour de 80 \%, ce qui correspond exactement à notre baseline E1 (78 \%).
+
+\subsection{Transfer Learning depuis ImageNet (2018--aujourd'hui)}
+
+L'approche actuellement dominante consiste à \textbf{réutiliser un modèle pré-entraîné} sur ImageNet (1.28 M d'images, 1\,000 classes) et à le \textbf{spécialiser} sur la tâche médicale. Les architectures couramment citées dans la littérature sont :
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des architectures CNN utilisées en imagerie médicale}
+\begin{tabularx}{\textwidth}{|l|r|r|X|}
+\hline
+\rowcolor{navy!10}
+\textbf{Architecture} & \textbf{Params} & \textbf{Top-1 ImageNet} & \textbf{Caractéristiques} \\
+\hline
+VGG16 / VGG19      & 138 M / 144 M & 71.3 / 71.5 \% & Très profond, mais sans skip connections : difficile à entraîner, lourd en mémoire. \\
+\hline
+Inception V3       & 23.8 M        & 77.9 \%        & Modules d'inception complexes ; bon compromis mais moins de poids pré-entraînés disponibles que pour ResNet. \\
+\hline
+\textbf{ResNet50}  & \textbf{25.6 M} & \textbf{76.1 \%} & \textbf{Connexions résiduelles · gradient stable · standard de facto en imagerie médicale.} \\
+\hline
+DenseNet121        & 8 M           & 74.9 \%        & Connexions denses ; léger mais plus lent à entraîner par époque. \\
+\hline
+EfficientNet-B0    & 5.3 M         & 77.1 \%        & Très optimisé en paramètres, mais sensible aux hyperparamètres et moins documenté en transfer learning médical. \\
+\hline
+Vision Transformer (ViT-B/16) & 86 M & 77.9 \% & Récent (2021), nécessite beaucoup plus de données pour bien généraliser ; moins adapté aux datasets médicaux modérés. \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Pourquoi nous avons choisi ResNet50}
+
+Notre choix de ResNet50 résulte d'une analyse comparative explicite des architectures candidates. Sept arguments principaux le justifient.
+
+\subsection{Connexions résiduelles : un atout structurel}
+
+ResNet (\emph{Residual Network}, He et al., 2016) introduit les \textbf{skip connections} qui résolvent fondamentalement le problème du \emph{vanishing gradient}. Mathématiquement, au lieu d'apprendre $H(x)$ directement, le bloc apprend le résidu $F(x) = H(x) - x$, et la sortie devient $H(x) = F(x) + x$. Conséquences pratiques :
+
+\begin{itemize}
+  \item Le gradient se propage \textbf{intactement} aux couches profondes via le chemin identité.
+  \item L'entraînement reste stable même sur 50 couches (les ResNet vont jusqu'à 152 couches dans les variantes plus lourdes).
+  \item L'optimisation converge plus rapidement et plus régulièrement que sur VGG ou autres architectures non résiduelles.
+\end{itemize}
+
+\subsection{Compromis profondeur / paramètres optimal}
+
+Avec 25.6 M paramètres seulement, ResNet50 est nettement plus léger que VGG16 (138 M) tout en étant plus performant en accuracy ImageNet. Cette légèreté relative est cruciale dans notre cas : nous disposons d'un GPU \textbf{RTX 2050 à 4 GB de VRAM}, ce qui exclut de facto les architectures plus lourdes (VGG, ViT-L) qui ne tiendraient pas en mémoire avec un \code{batch\_size} raisonnable.
+
+\subsection{Features transférables d'excellente qualité}
+
+Plusieurs études comparatives (Raghu et al., 2019 ; Cheplygina et al., 2019) ont montré que les features extraites par ResNet50 sur ImageNet \textbf{se transfèrent particulièrement bien} aux domaines médicaux, y compris les IRM cérébrales, malgré l'écart de distribution important entre images naturelles et images médicales. La hiérarchie des features (bords $\rightarrow$ textures $\rightarrow$ motifs $\rightarrow$ parties d'objet) reste pertinente pour distinguer des structures anatomiques.
+
+\subsection{Standard de facto en imagerie médicale}
+
+ResNet50 est l'architecture de référence dans la grande majorité des publications récentes en \emph{Computer-Aided Diagnosis} (CAD), notamment pour la classification de tumeurs cérébrales (Khan et al., 2020 ; Sajjad et al., 2019). Cela facilite :
+
+\begin{itemize}
+  \item La \textbf{comparaison} avec l'état de l'art (mêmes baselines réutilisables).
+  \item La \textbf{reproductibilité} : nombreux dépôts publics, tutoriels, poids vérifiés.
+  \item Le \textbf{débogage} : les comportements pathologiques (loss qui diverge, etc.) sont documentés et compris.
+\end{itemize}
+
+\subsection{Support natif dans torchvision}
+
+\code{torchvision.models.resnet50(weights=ResNet50\_Weights.IMAGENET1K\_V2)} fournit en une ligne un modèle pré-entraîné avec les meilleurs poids disponibles (V2, top-1 80.86 \% ImageNet). Aucun téléchargement manuel, aucune conversion de format. Le modèle est directement utilisable et compatible avec tout l'écosystème PyTorch (autograd, hooks, JIT compilation).
+
+\subsection{Compatibilité Grad-CAM exemplaire}
+
+L'interprétabilité étant un enjeu majeur en imagerie médicale, le choix d'une architecture compatible avec \textbf{Grad-CAM} est crucial. ResNet50 expose une couche convolutive finale (\code{layer4[-1]}) qui constitue une cible idéale pour Grad-CAM :
+
+\begin{itemize}
+  \item Résolution spatiale 7$\times$7 (suffisante pour localiser une tumeur sur 224$\times$224).
+  \item 2048 canaux (richesse sémantique).
+  \item Hooks PyTorch (\code{register\_forward\_hook}, \code{register\_full\_backward\_hook}) qui s'attachent en une ligne.
+\end{itemize}
+
+À l'inverse, des architectures comme Vision Transformer rendent Grad-CAM moins direct (il faut adapter la méthode aux blocs d'attention via \emph{Attention Rollout} ou \emph{TransformerExplainability}).
+
+\subsection{Maturité industrielle et performance d'inférence}
+
+Sur notre RTX 2050, ResNet50 atteint $\sim$10 ms par image en inférence, et $\sim$36 ms sur CPU Intel i7. Cette latence est compatible avec un usage interactif (réponse $<$ 200 ms côté utilisateur final). Les architectures plus récentes (EfficientNet, ViT) offrent parfois un meilleur ratio paramètres/accuracy, mais leur \textbf{maturité d'écosystème} (optimisations CUDA, ONNX, quantization INT8) reste inférieure.
+
+\section{Synthèse comparative}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Notation des architectures candidates selon nos critères (1 = mauvais, 5 = excellent)}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|p{4.2cm}|c|c|c|c|c|c|}
+\hline
+\rowcolor{navy!10}
+\textbf{Critère} & \textbf{VGG16} & \textbf{Inception V3} & \textbf{\textcolor{cyandark}{ResNet50}} & \textbf{DenseNet121} & \textbf{EfficientNet-B0} & \textbf{ViT-B/16} \\
+\hline
+Stabilité d'entraînement     & 2  & 4  & \textbf{5}                          & 4  & 3  & 2  \\
+\hline
+Compatibilité VRAM 4 GB      & 1  & 3  & \textbf{4}                          & 5  & 5  & 2  \\
+\hline
+Qualité du transfert médical & 3  & 4  & \textbf{5}                          & 4  & 3  & 3  \\
+\hline
+Maturité de l'écosystème     & 5  & 4  & \textbf{5}                          & 4  & 3  & 3  \\
+\hline
+Compatibilité Grad-CAM       & 4  & 3  & \textbf{5}                          & 4  & 3  & 2  \\
+\hline
+Performance (littérature)    & 3  & 4  & \textbf{5}                          & 4  & 4  & 4  \\
+\hline
+Latence d'inférence          & 2  & 3  & \textbf{4}                          & 4  & 5  & 2  \\
+\hline
+\textbf{Score total / 35}    & 20 & 25 & \textbf{\color{cyandark} 33}        & 29 & 26 & 18 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{successbox}[Décision d'architecture à ce stade du projet]
+ResNet50 est retenu comme architecture principale pour BrainScan AI à ce stade du développement. Sa combinaison \textbf{stabilité d'entraînement} (connexions résiduelles), \textbf{compatibilité matérielle} (24.6 M paramètres compatibles avec nos 4 GB de VRAM), \textbf{maturité de l'écosystème PyTorch} et \textbf{compatibilité Grad-CAM} en fait le meilleur compromis pour notre contexte. Les architectures alternatives (DenseNet121, EfficientNet-B0) restent prévues comme \emph{baselines de comparaison} dans la phase d'\emph{ablation} et d'\emph{ensembling} planifiée pour les semaines à venir avant la livraison finale du projet.
+\end{successbox}
+
+% ════════════════════════════════════════════════════════════════════════
+% PARTIE 1 — ENVIRONNEMENT
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Environnement d'implémentation}
+
+\section{Langage, framework et bibliothèques}
+
+\subsection{Langage de programmation}
+
+Le projet est entièrement développé en \textbf{Python~3.11.9}. Ce choix s'impose en science des données et en Deep Learning pour plusieurs raisons : richesse de l'écosystème scientifique (NumPy, SciPy, scikit-learn), syntaxe expressive, large communauté, et support natif par tous les frameworks de Deep Learning modernes.
+
+\subsection{Framework de Deep Learning}
+
+Nous avons retenu \textbf{PyTorch~2.11} (avec \code{torchvision~0.20}) comme framework principal, plutôt que TensorFlow/Keras. Les arguments décisifs :
+
+\begin{itemize}
+  \item \textbf{Graphe dynamique} (define-by-run) : facilite le débogage et l'expérimentation rapide.
+  \item \textbf{Hooks PyTorch natifs} : indispensables pour implémenter \textbf{Grad-CAM} sans dépendances tierces.
+  \item \textbf{API pythonique} et claire ; manipulation directe des tenseurs.
+  \item Support GPU CUDA transparent (\code{tensor.to(device)}).
+  \item Modèles pré-entraînés (ResNet, EfficientNet, ViT) accessibles via \code{torchvision.models}.
+\end{itemize}
+
+\subsection{Bibliothèques principales}
+
+\begin{table}[H]
+\centering
+\caption{Bibliothèques utilisées dans le projet}
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\rowcolor{navy!10}
+\textbf{Catégorie} & \textbf{Bibliothèque} & \textbf{Rôle} \\
+\hline
+Deep Learning & PyTorch 2.11 & Définition modèle, autograd, training loop \\
+\hline
+              & torchvision 0.20 & ResNet50 pré-entraîné, transforms \\
+\hline
+              & CUDA 11.8 & Accélération GPU (optionnel) \\
+\hline
+Augmentation  & Albumentations 1.4 & Pipeline d'augmentation haute performance \\
+\hline
+Données       & NumPy 1.26 & Tenseurs multidimensionnels \\
+\hline
+              & Pandas 2.1 & Logs CSV, manipulation tabulaire \\
+\hline
+              & Pillow 10.x & Lecture/écriture images JPEG/PNG \\
+\hline
+              & OpenCV 4.9 & Resize, normalisation, heatmap Grad-CAM \\
+\hline
+Évaluation    & scikit-learn 1.4 & Métriques (P/R/F1, ROC, confusion) + split stratifié \\
+\hline
+Visualisation & Matplotlib 3.8 & Courbes, heatmaps \\
+\hline
+              & Seaborn 0.13 & Statistical plots stylés \\
+\hline
+Backend       & FastAPI 0.110 & API REST production \\
+\hline
+              & uvicorn & Serveur ASGI \\
+\hline
+              & slowapi & Rate limiting \\
+\hline
+Tests \& Lint & pytest 8.x, ruff, black & Tests + qualité de code \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Configuration matérielle}
+
+\begin{table}[H]
+\centering
+\caption{Configuration matérielle utilisée}
+\begin{tabular}{|l|l|}
+\hline
+\rowcolor{navy!10}
+\textbf{Composant} & \textbf{Détails} \\
+\hline
+CPU              & Intel Core i7 (8 cœurs / 16 threads) \\
+\hline
+GPU              & NVIDIA RTX 2050 — 4 GB VRAM (CUDA 11.8) \\
+\hline
+RAM              & 16 GB DDR4 \\
+\hline
+Stockage         & SSD NVMe 512 GB \\
+\hline
+OS principal     & Windows 11 (testé aussi sur Linux Ubuntu 22.04) \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Versions exactes des outils}
+
+\begin{center}
+\begin{longtable}{|l|l|}
+\caption{Versions verrouillées (\code{requirements.txt})}\\
+\hline
+\rowcolor{navy!10}
+\textbf{Outil} & \textbf{Version} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{navy!10}
+\textbf{Outil} & \textbf{Version} \\
+\hline
+\endhead
+\hline
+\endfoot
+Python              & 3.11.9 \\
+\hline
+torch               & 2.11.0 \\
+\hline
+torchvision         & 0.20.0 \\
+\hline
+numpy               & 1.26.4 \\
+\hline
+pandas              & 2.1.4 \\
+\hline
+scikit-learn        & 1.4.0 \\
+\hline
+albumentations      & 1.4.0 \\
+\hline
+opencv-python       & 4.9.0 \\
+\hline
+matplotlib          & 3.8.2 \\
+\hline
+seaborn             & 0.13.1 \\
+\hline
+Pillow              & 10.2.0 \\
+\hline
+fastapi             & 0.110.0 \\
+\hline
+uvicorn             & 0.27.0 \\
+\hline
+pytest              & 8.0.0 \\
+\hline
+ruff                & 0.3.0 \\
+\hline
+black               & 24.2.0 \\
+\hline
+\end{longtable}
+\end{center}
+
+\section{Justification du choix}
+
+\begin{infobox}[Pourquoi cet environnement convient au projet]
+\begin{itemize}
+  \item \textbf{PyTorch + CUDA} : gain de temps d'entraînement majeur (30 min GPU contre 4-6 h CPU) sur un dataset de 7\,023 images haute résolution.
+  \item \textbf{torchvision.models} : ResNet50 pré-entraîné sur ImageNet directement importable, base solide pour le \emph{transfer learning} sur un domaine médical avec peu de données.
+  \item \textbf{Albumentations} : augmentation d'images jusqu'à 10$\times$ plus rapide que \code{torchvision.transforms}, important quand on a un GPU modeste (RTX 2050 — 4 GB).
+  \item \textbf{FastAPI} : framework asynchrone moderne pour servir le modèle en production avec validation Pydantic et documentation OpenAPI automatique.
+  \item \textbf{Compatibilité Windows} : \code{num\_workers=0} pour éviter les problèmes de multiprocessing sous Windows.
+  \item \textbf{Reproductibilité} : seed fixée à 42, versions verrouillées dans \code{requirements.txt}, Docker multi-stage disponible.
+\end{itemize}
+\end{infobox}
+
+% ════════════════════════════════════════════════════════════════════════
+% PARTIE 2 — PIPELINE
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Implémentation du pipeline}
+
+\section{Étapes réelles du pipeline}
+
+Le pipeline complet est composé de \textbf{cinq étapes séquentielles}, orchestrées par les modules du dossier \code{src/} et les scripts CLI de \code{scripts/}.
+
+\begin{figure}[H]
+\centering
+\fbox{\begin{minipage}{0.92\textwidth}
+\small\ttfamily
+\textbf{Pipeline complet — 5 étapes}\\[0.3cm]
+$[$Étape 1$]$ Chargement \\
+\hspace{1cm}data/raw/ (JPEG/PNG) $\rightarrow$ ImageFolder PyTorch\\
+\hspace{4cm}$|$\\
+\hspace{4cm}$v$\\
+$[$Étape 2$]$ Prétraitement \\
+\hspace{1cm}Resize 256 $\rightarrow$ CenterCrop 224 $\rightarrow$ Normalize ImageNet $\rightarrow$ .npy\\
+\hspace{4cm}$|$\\
+\hspace{4cm}$v$\\
+$[$Étape 3$]$ Augmentation (train uniquement) \\
+\hspace{1cm}HorizontalFlip · Rotate · RandomResizedCrop · Brightness · Noise\\
+\hspace{4cm}$|$\\
+\hspace{4cm}$v$\\
+$[$Étape 4$]$ Entraînement \\
+\hspace{1cm}Stage 1 (frozen backbone, 20 ep.) $\rightarrow$ Stage 2 (fine-tuning, 30 ep.)\\
+\hspace{4cm}$|$\\
+\hspace{4cm}$v$\\
+$[$Étape 5$]$ Évaluation \\
+\hspace{1cm}Test set 1054 images $\rightarrow$ accuracy, F1, ROC, confusion matrix
+\end{minipage}}
+\caption{Vue d'ensemble du pipeline en 5 étapes}
+\end{figure}
+
+\subsection{Étape 1 — Chargement des données}
+
+Les données proviennent du dataset Kaggle \emph{Brain Tumor Classification MRI} (Sartaj Bhuvaji), contenant 7\,023 images IRM classées en 4 catégories : Glioma, Meningioma, No Tumor, Pituitary.
+
+Le chargement s'effectue via la classe personnalisée \code{BrainTumorDataset} héritant de \code{torch.utils.data.Dataset}. Cette classe est appelée par un \code{DataLoader} avec \code{batch\_size=24} et \code{num\_workers=0} (compatibilité Windows).
+
+\subsection{Étape 2 — Prétraitement}
+
+Le module \code{src/data\_pipeline.py} orchestre la conversion des JPEG/PNG bruts en tenseurs \code{.npy} normalisés. Les étapes détaillées sont présentées dans la section suivante.
+
+\subsection{Étape 3 — Augmentation des données}
+
+L'augmentation est appliquée \textbf{uniquement au train set}, à la volée à chaque batch. Cela évite le sur-stockage tout en multipliant artificiellement la diversité.
+
+\subsection{Étape 4 — Entraînement}
+
+L'entraînement utilise une stratégie \textbf{transfer learning en 2 stages} (détaillée Partie 3). Le module \code{src/model\_trainer.py} encapsule la boucle d'entraînement avec callbacks (EarlyStopping, ReduceLROnPlateau, ModelCheckpoint).
+
+\subsection{Étape 5 — Évaluation}
+
+Le script \code{scripts/evaluate.py} charge le meilleur checkpoint et l'évalue sur les 1\,054 images du test set. Il génère un rapport \code{evaluation\_summary.txt}, un fichier \code{test\_results.csv} et plusieurs figures (matrice de confusion, courbes ROC).
+
+\section{Techniques de prétraitement utilisées}
+
+\subsection{Redimensionnement}
+
+Toutes les images sont redimensionnées à \textbf{224$\times$224 pixels} en deux temps :
+\begin{enumerate}
+  \item \code{Resize(256)} en conservant le ratio d'aspect (côté court = 256).
+  \item \code{CenterCrop(224)} pour atteindre la dimension finale requise par ResNet50.
+\end{enumerate}
+
+\subsection{Normalisation}
+
+Deux normalisations successives sont appliquées :
+\begin{enumerate}
+  \item Conversion \code{uint8[0,255]} $\rightarrow$ \code{float32[0,1]}.
+  \item Normalisation par les statistiques \textbf{ImageNet} : \\
+  \code{mean = [0.485, 0.456, 0.406]} \quad \code{std = [0.229, 0.224, 0.225]}.
+\end{enumerate}
+
+Cette normalisation est cruciale en transfer learning : elle ramène les images de notre domaine médical dans la même distribution statistique que celle vue par ResNet50 lors de son pré-entraînement sur ImageNet.
+
+\subsection{Encodage des labels}
+
+Les classes textuelles sont encodées en indices entiers via un dictionnaire fixe :
+
+\begin{lstlisting}[language=Python, caption={Mapping classes -> indices}]
+CLASS_TO_IDX = {
+    "glioma": 0,
+    "meningioma": 1,
+    "notumor": 2,
+    "pituitary": 3,
+}
+IDX_TO_CLASS = {v: k for k, v in CLASS_TO_IDX.items()}
+\end{lstlisting}
+
+Aucune utilisation de \emph{one-hot encoding} : la \code{CrossEntropyLoss} de PyTorch attend directement des indices.
+
+\subsection{Conversion de format}
+
+Les images sont :
+\begin{itemize}
+  \item Forcées en \textbf{RGB 3 canaux} (les images grayscale sont dupliquées sur 3 canaux, les RGBA voient le canal alpha supprimé).
+  \item Sauvegardées en \code{.npy} (binaire NumPy float32) : \textbf{4$\times$} plus rapide à charger que des JPEG décodés à chaque batch.
+\end{itemize}
+
+\subsection{Suppression du bruit et validation}
+
+\begin{itemize}
+  \item \textbf{Validation des fichiers} : \code{PIL.Image.open()} détecte automatiquement les fichiers corrompus.
+  \item \textbf{Filtrage taille} : images $<$ 32$\times$32 ignorées.
+  \item \textbf{Filtrage MIME} : seuls JPEG, JPG et PNG sont acceptés.
+\end{itemize}
+
+\subsection{Augmentation Albumentations}
+
+\begin{lstlisting}[language=Python, caption={Pipeline d'augmentation (train uniquement)}]
+train_transform = A.Compose([
+    A.HorizontalFlip(p=0.5),
+    A.RandomRotate90(p=0.3),
+    A.Rotate(limit=15, p=0.4),
+    A.RandomResizedCrop(height=224, width=224, scale=(0.85, 1.0)),
+    A.RandomBrightnessContrast(brightness_limit=0.2,
+                               contrast_limit=0.2, p=0.4),
+    A.GaussNoise(var_limit=(10, 50), p=0.2),
+    A.ElasticTransform(p=0.2),
+    A.Normalize(mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]),
+    ToTensorV2(),
+])
+\end{lstlisting}
+
+Le val/test set ne reçoit que \code{Normalize} pour une évaluation déterministe.
+
+\section{Architecture et modèle implémentés}
+
+\subsection{Type de modèle}
+
+\textbf{Réseau de neurones convolutif profond} basé sur \textbf{ResNet50} (Residual Network à 50 couches) avec une tête de classification personnalisée pour 4 classes. L'approche est du \emph{transfer learning} : on réutilise les poids appris sur ImageNet (1.28 M d'images, 1000 classes) et on adapte le réseau à notre tâche médicale.
+
+\subsection{Couches principales}
+
+\begin{table}[H]
+\centering
+\caption{Décomposition de l'architecture}
+\begin{tabularx}{\textwidth}{|l|X|r|}
+\hline
+\rowcolor{navy!10}
+\textbf{Bloc} & \textbf{Détails} & \textbf{Paramètres} \\
+\hline
+conv1 + bn1 + relu + maxpool & 7$\times$7 conv 64, stride 2 & $\sim$10 K \\
+\hline
+layer1 & 3 $\times$ Bottleneck (64 $\rightarrow$ 256) & $\sim$220 K \\
+\hline
+layer2 & 4 $\times$ Bottleneck (128 $\rightarrow$ 512) & $\sim$1.2 M \\
+\hline
+layer3 & 6 $\times$ Bottleneck (256 $\rightarrow$ 1024) & $\sim$7.1 M \\
+\hline
+layer4 & 3 $\times$ Bottleneck (512 $\rightarrow$ 2048) — \emph{cible Grad-CAM} & $\sim$15 M \\
+\hline
+avgpool + flatten & GlobalAveragePooling2D $\rightarrow$ vecteur 2048 & 0 \\
+\hline
+\textbf{Tête custom} & Linear(2048 $\rightarrow$ 512) + ReLU + BN + Dropout(0.4) + Linear(512 $\rightarrow$ 4) & $\sim$1.05 M \\
+\hline
+\textbf{Total} & & \textbf{$\sim$24.6 M} \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Paramètres importants}
+
+\begin{itemize}
+  \item \textbf{Total des paramètres} : 24.6 M
+  \item \textbf{Backbone ResNet50} pré-entraîné ImageNet : 23.5 M (gelé en Stage 1)
+  \item \textbf{Tête custom} : 1.05 M (toujours entraînable)
+  \item \textbf{Dropout} : 0.4 (régularisation forte)
+  \item \textbf{Activation finale} : Softmax (4 classes)
+  \item \textbf{Fonction de perte} : CrossEntropyLoss avec \code{class\_weights}
+\end{itemize}
+
+\section{Schéma de l'architecture}
+
+\begin{figure}[H]
+\centering
+\fbox{\begin{minipage}{0.85\textwidth}
+\small\ttfamily
+Input : RGB tensor (B, 3, 224, 224)\\
+\hspace{4cm}$|$\\
+\hspace{4cm}$v$\\
++----------------------------------------+\\
+$|$  \textbf{ResNet50 backbone (pré-entraîné)} \hspace{0.1cm}$|$\\
+$|$  conv1 $\rightarrow$ bn1 $\rightarrow$ relu $\rightarrow$ maxpool \hspace{0.6cm}$|$\\
+$|$  layer1  (3 $\times$ Bottleneck, 256) \hspace{0.5cm}$|$\\
+$|$  layer2  (4 $\times$ Bottleneck, 512) \hspace{0.5cm}$|$\\
+$|$  layer3  (6 $\times$ Bottleneck, 1024) \hspace{0.3cm}$|$\\
+$|$  layer4  (3 $\times$ Bottleneck, 2048) $<$-- Grad-CAM\\
+$|$  avgpool $\rightarrow$ flatten \hspace{2.3cm}$|$\\
++-------------------+--------------------+\\
+\hspace{4cm}$|$ (B, 2048)\\
+\hspace{4cm}$v$\\
++----------------------------------------+\\
+$|$  \textbf{Tête custom de classification}    $|$\\
+$|$  Linear(2048 $\rightarrow$ 512) \hspace{1.7cm}$|$\\
+$|$  ReLU                              \hspace{1cm}$|$\\
+$|$  BatchNorm1d(512) \hspace{1.9cm}$|$\\
+$|$  Dropout(p = 0.4) \hspace{1.95cm}$|$\\
+$|$  Linear(512 $\rightarrow$ 4) \hspace{2cm}$|$\\
++-------------------+--------------------+\\
+\hspace{4cm}$|$ (B, 4)\\
+\hspace{4cm}$v$\\
+\hspace{2cm}Softmax $\rightarrow$ \{Glioma, Méning., No Tumor, Pituitary\}
+\end{minipage}}
+\caption{Architecture ResNet50Classifier — backbone + tête custom 4-classes}
+\end{figure}
+
+% ════════════════════════════════════════════════════════════════════════
+% PARTIE 3 — CONFIGURATION EXPÉRIMENTALE
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Configuration expérimentale}
+
+\section{Hyperparamètres et configuration}
+
+\begin{center}
+\begin{longtable}{|l|l|}
+\caption{Configuration expérimentale complète}\\
+\hline
+\rowcolor{navy!10}
+\textbf{Hyperparamètre} & \textbf{Valeur} \\
+\hline
+\endfirsthead
+\hline
+\rowcolor{navy!10}
+\textbf{Hyperparamètre} & \textbf{Valeur} \\
+\hline
+\endhead
+\hline
+\endfoot
+Taille du batch (batch size)        & 24 \\
+\hline
+Learning rate Stage 1               & $1 \times 10^{-3}$ \\
+\hline
+Learning rate Stage 2               & $1 \times 10^{-4}$ \\
+\hline
+Optimiseur                          & Adam ($\beta_1=0.9$, $\beta_2=0.999$) \\
+\hline
+Weight decay (L2)                   & $1 \times 10^{-4}$ \\
+\hline
+Nombre d'époques total              & 50 (20 Stage 1 + 30 Stage 2) \\
+\hline
+Fonction de perte                   & CrossEntropyLoss + class\_weights \\
+\hline
+Métrique de monitoring              & val\_loss (utilisée par les callbacks) \\
+\hline
+Métriques rapportées                & Accuracy, Precision, Recall, F1, AUC \\
+\hline
+Image size                          & 224 $\times$ 224 \\
+\hline
+Random seed                         & 42 (reproductibilité) \\
+\hline
+EarlyStopping patience              & 7 époques \\
+\hline
+ReduceLROnPlateau factor            & 0.5 (LR $\div$ 2) \\
+\hline
+ReduceLROnPlateau patience          & 3 époques \\
+\hline
+\end{longtable}
+\end{center}
+
+\subsection{Justification du choix des hyperparamètres}
+
+\begin{itemize}
+  \item \textbf{batch\_size = 24} : compromis entre vitesse (gros batch) et capacité VRAM (4 GB sur RTX 2050). Au-dessus de 32, OutOfMemoryError CUDA.
+  \item \textbf{LR Stage 1 = $10^{-3}$} : LR « classique » Adam pour faire converger rapidement une nouvelle tête.
+  \item \textbf{LR Stage 2 = $10^{-4}$} : 10$\times$ plus petit pour ne pas détruire les features ImageNet en fine-tuning.
+  \item \textbf{Optimiseur Adam} : robuste, peu sensible au tuning, bien adapté aux problèmes de vision.
+  \item \textbf{50 époques} : suffisant grâce à l'EarlyStopping qui interrompt en pratique vers l'époque 35-40.
+  \item \textbf{Dropout = 0.4 + weight\_decay = $10^{-4}$} : régularisation double pour éviter l'overfitting sur 4\,915 images d'entraînement.
+\end{itemize}
+
+\section{Division des données}
+
+Le split est réalisé via \code{sklearn.model\_selection.StratifiedShuffleSplit} avec \code{random\_state=42}. La \emph{stratification} garantit que chaque sous-ensemble conserve la même proportion de classes que le dataset complet.
+
+\begin{table}[H]
+\centering
+\caption{Répartition Train / Validation / Test}
+\begin{tabular}{|l|r|r|l|}
+\hline
+\rowcolor{navy!10}
+\textbf{Split} & \textbf{Images} & \textbf{Ratio} & \textbf{Usage} \\
+\hline
+Train          & 4\,915          & 70\%           & Apprentissage des poids \\
+\hline
+Validation     & 1\,054          & 15\%           & EarlyStopping, ReduceLROnPlateau, ModelCheckpoint \\
+\hline
+Test           & 1\,054          & 15\%           & Évaluation finale (jamais vu pendant l'entraînement) \\
+\hline
+\textbf{Total} & \textbf{7\,023} & \textbf{100\%} & \\
+\hline
+\end{tabular}
+\end{table}
+
+Le résultat est sérialisé dans \code{data/splits/split\_info.json} (632 KB), qui sert de \textbf{source de vérité unique} pour le training, l'évaluation et les analyses statistiques.
+
+\section{Présentation des expériences réalisées}
+
+À ce stade du projet, quatre expériences principales ont été menées de manière incrémentale, du \textbf{baseline} à la configuration actuellement retenue. D'autres expériences (cross-validation $k$-fold, ablation, ensembling) sont planifiées pour la phase finale.
+
+\begin{table}[H]
+\centering
+\caption{Tableau des expériences réalisées}
+\small
+\begin{tabularx}{\textwidth}{|c|X|X|X|}
+\hline
+\rowcolor{navy!10}
+\textbf{Expérience} & \textbf{Description} & \textbf{Hyperparamètres clés} & \textbf{Résultats (val acc)} \\
+\hline
+E1 — \emph{Baseline} & CNN custom \emph{from scratch} (4 conv + 2 dense) & lr=$10^{-3}$ · Adam · 50 ep. & $\sim$78\% \\
+\hline
+E2 — Transfer learning naïf & ResNet50 + tête, tout entraînable & lr=$10^{-3}$ · 30 ep. & $\sim$91\% (instable) \\
+\hline
+E3 — Transfer learning 2 stages & Backbone frozen Stage 1, fine-tune Stage 2 & lr=$10^{-3}\!\rightarrow\!10^{-4}$ · 50 ep. & 97.8\% \\
+\hline
+E4 — \textbf{Finale} (E3 + augmentation + class weights) & Pipeline complet retenu & idem + Albumentations + weights & \textbf{98.96\%} (test) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Typologie des expériences}
+
+\begin{itemize}
+  \item \textbf{Expérience baseline} : E1 (CNN custom \emph{from scratch}) — sert de point de référence sans transfer learning, pour mesurer le gain apporté par ResNet50.
+  \item \textbf{Expériences d'amélioration} : E2 (introduction du transfer learning), E3 (stratégie 2 stages contre fine-tuning naïf), E4 (ajout augmentation + class weights).
+  \item \textbf{Expériences de comparaison} : E2 vs E3 isole l'impact de la stratégie 2-stages ; E3 vs E4 isole l'impact de l'augmentation Albumentations + class weights.
+\end{itemize}
+
+% ════════════════════════════════════════════════════════════════════════
+% PARTIE 4 — SUIVI & DIFFICULTÉS
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Suivi des expériences et difficultés rencontrées}
+
+\section{Tableau récapitulatif des expériences}
+
+\begin{table}[H]
+\centering
+\caption{Suivi détaillé des expériences (logs/experiments.csv)}
+\scriptsize
+\begin{tabularx}{\textwidth}{|c|X|X|X|X|X|}
+\hline
+\rowcolor{navy!10}
+\textbf{ID} & \textbf{Modèle} & \textbf{Paramètres modifiés} & \textbf{Acc val} & \textbf{Acc test} & \textbf{Observations} \\
+\hline
+E1 & CNN custom (4 conv) & Aucun (baseline) & 78\% & 76\% & Overfit dès l'époque 25 ; pas de transfer learning \\
+\hline
+E2 & ResNet50 (tout entraînable) & Backbone non gelé · lr=$10^{-3}$ & 91\% & 89\% & Instabilité Stage 1, oscillations val loss \\
+\hline
+E3 & ResNet50 2-stages & Freeze + 2 stages LR & 97.8\% & 97.5\% & Courbes lisses, convergence vers ép. 35 \\
+\hline
+E3b & ResNet50 2-stages + dropout 0.6 & Dropout augmenté & 96.9\% & 96.4\% & Trop de régularisation, légère sous-perf. \\
+\hline
+E3c & ResNet50 2-stages + LR Stage 2 = $5\!\times\!10^{-5}$ & LR2 halvé & 97.6\% & 97.3\% & Convergence trop lente, gain marginal \\
+\hline
+E4 & ResNet50 2-stages + Albu + weights & + Augmentation + class weights & 99.1\% & \textbf{98.96\%} & Configuration retenue \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Difficultés rencontrées}
+
+\subsection{Overfitting (E1, E2)}
+
+Le CNN \emph{from scratch} (E1) overfitte rapidement (gap train/val $>$ 15\%) faute de capacité de régularisation. Sur E2, même ResNet50 entièrement dégelé montre des symptômes d'overfitting parce que la tête (initialisée aléatoirement) propage de gros gradients qui perturbent le backbone pré-entraîné.
+
+\subsection{Temps d'entraînement}
+
+Sur CPU pur, l'entraînement de E4 prend \textbf{4 à 6 heures}. Sur RTX 2050, il descend à \textbf{30-45 minutes}. L'itération expérimentale était donc fortement contrainte par le GPU disponible.
+
+\subsection{Manque de données}
+
+Avec seulement 4\,915 images d'entraînement réparties sur 4 classes, le risque d'overfitting est élevé. C'est précisément pourquoi le transfer learning et l'augmentation sont indispensables.
+
+\subsection{Instabilité du modèle (E2)}
+
+Lors du fine-tuning naïf (E2), la \code{val\_loss} oscillait fortement entre époques. Diagnostic : un LR trop élevé propage des gradients destructeurs vers le backbone pré-entraîné — c'est le \emph{catastrophic forgetting}.
+
+\subsection{Limitations matérielles}
+
+\begin{itemize}
+  \item \textbf{VRAM} : impossibilité de monter \code{batch\_size $>$ 32} sur 4 GB.
+  \item \textbf{Windows multiprocessing} : \code{num\_workers $>$ 0} crashe le DataLoader sous Windows, ce qui ralentit le chargement.
+  \item \textbf{Disque} : \emph{seek time} sur HDD initial → migration vers SSD NVMe.
+\end{itemize}
+
+\section{Solutions et ajustements réalisés}
+
+\begin{table}[H]
+\centering
+\caption{Difficultés et solutions appliquées}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\rowcolor{navy!10}
+\textbf{Difficulté} & \textbf{Solution appliquée} & \textbf{Effet mesuré} \\
+\hline
+Overfitting & Dropout 0.4 + weight\_decay $10^{-4}$ + augmentation Albumentations & Gap train/val $<$ 2\% \\
+\hline
+Temps entraînement & Sauvegarde des images au format \code{.npy} float32 normalisé & Chargement 4$\times$ plus rapide \\
+\hline
+Manque de données & Transfer learning ResNet50 ImageNet + augmentation forte & +20 pts vs CNN baseline \\
+\hline
+Instabilité (catastrophic forgetting) & Stratégie 2 stages : freeze puis fine-tune avec LR/10 & Courbes val\_loss lisses \\
+\hline
+VRAM 4 GB & batch\_size=24 + mixed precision (option AMP) & Tient en 3.2 GB \\
+\hline
+Windows multiprocessing & num\_workers = 0 (pas de subprocess) & DataLoader stable \\
+\hline
+Imbalance classes & class\_weights via sklearn + CrossEntropyLoss(weight=) & +0.5 pts F1 macro \\
+\hline
+LR optimal incertain & ReduceLROnPlateau (factor=0.5, patience=3) & LR auto-adapté \\
+\hline
+Arrêt au bon moment & EarlyStopping(patience=7) + ModelCheckpoint(best\_val\_loss) & Évite l'overfit tardif \\
+\hline
+\end{tabularx}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════
+% PARTIE 5 — APPROCHE PROPOSÉE  (document séparé : tp6_partie5.latex)
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Approche proposée}
+
+\begin{infobox}[Document séparé]
+La rédaction complète de la \og{}~Section~Approche proposée~\fg{}, conforme à la consigne de la Partie~5 du TP, est livrée sous la forme d'un \textbf{document LaTeX autonome} :
+\begin{center}
+\code{docs/tp6\_partie5.latex}
+\end{center}
+Ce document, rédigé dans le format d'un article scientifique en \textbf{paragraphes continus détaillés} (sans listes à puces), couvre les cinq éléments demandés par la consigne :
+\begin{enumerate}
+  \item Vue générale de l'approche.
+  \item Prétraitement des données.
+  \item Architecture / méthode proposée.
+  \item Procédure d'entraînement.
+  \item Métriques d'évaluation.
+\end{enumerate}
+Le présent rapport (\code{tp6.latex}) se contente, dans cette partie, de rappeler succinctement les points clés afin de préserver la cohérence d'ensemble du document principal.
+\end{infobox}
+
+\section{Résumé synthétique de l'approche}
+
+Nous proposons un système de classification d'IRM cérébrales en quatre catégories (Glioma, Méningiome, Aucune tumeur, Hypophysaire) construit autour d'un \textbf{ResNet50 pré-entraîné sur ImageNet} et spécialisé par \textbf{transfer learning en deux stages}. Le pipeline global enchaîne cinq phases successives : (i) acquisition et prétraitement des images Kaggle, (ii) augmentation à la volée sur le seul \emph{train set} via Albumentations, (iii) entraînement en deux stages (adaptation rapide de la tête puis fine-tuning précis du backbone), (iv) évaluation sur un \emph{test set} indépendant à l'aide d'un ensemble cohérent de métriques (accuracy, F1, ROC, calibration), et (v) déploiement via une API REST FastAPI accompagnée d'une carte d'attention Grad-CAM. Trois principes guident l'architecture du projet : la modularité (chaque phase est un module Python autonome), la reproductibilité (seed fixée à 42, dépendances verrouillées) et l'interprétabilité native du modèle.
+
+\section{Synthèse des éléments clés}
+
+\begin{table}[H]
+\centering
+\caption{Récapitulatif des choix techniques de l'approche proposée}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\rowcolor{navy!10}
+\textbf{Élément} & \textbf{Choix retenu} \\
+\hline
+Backbone                   & ResNet50 pré-entraîné ImageNet ($\sim$24.6 M paramètres) \\
+\hline
+Tête de classification     & Linear(2048$\to$512) + ReLU + BatchNorm1d + Dropout(0.4) + Linear(512$\to$4) \\
+\hline
+Prétraitement              & Resize(256) + CenterCrop(224) + Normalize ImageNet + sérialisation \code{.npy} \\
+\hline
+Augmentation (train)       & Albumentations : HFlip · Rotate $\pm 15°$ · RandomResizedCrop · BrightnessContrast · GaussNoise · Elastic \\
+\hline
+Stratégie d'entraînement   & Transfer learning 2 stages (freeze 20 ép. à $10^{-3}$, puis fine-tune 30 ép. à $10^{-4}$) \\
+\hline
+Optimiseur \& loss          & Adam + CrossEntropyLoss pondérée par \code{class\_weights} \\
+\hline
+Callbacks                  & EarlyStopping (patience 7) · ReduceLROnPlateau (factor 0.5) · ModelCheckpoint \\
+\hline
+Interprétabilité           & Grad-CAM via hooks PyTorch sur \code{layer4[-1]} (résolution 7$\times$7) \\
+\hline
+Métriques rapportées       & Accuracy, P/R/F1, Macro F1, Confusion, ROC-AUC, PR-AP, Brier, Latence \\
+\hline
+Résultats préliminaires    & 98.96 \% test acc · F1 = 0.99 · AUC = 0.999 · Brier $\approx$ 0.0085 (configuration E4) \\
+\hline
+\end{tabularx}
+\end{table}
+
+Pour le développement argumenté de chacun de ces éléments sous forme de paragraphes scientifiques continus (style \emph{Proposed Approach}), se référer au document séparé \code{docs/tp6\_partie5.latex} mentionné plus haut.
+
+% ════════════════════════════════════════════════════════════════════════
+% CONCLUSION
+% ════════════════════════════════════════════════════════════════════════
+\chapter*{Conclusion et travaux à venir}
+\addcontentsline{toc}{chapter}{Conclusion et travaux à venir}
+
+\section*{Bilan intermédiaire}
+
+Ce TP6 constitue un \textbf{point d'étape intermédiaire} dans le développement du projet BrainScan AI. À ce stade, le pipeline complet est implémenté et fonctionnel, les expériences préliminaires confirment la pertinence des choix techniques (ResNet50, transfer learning en deux stages, augmentation Albumentations) et les premiers résultats sont prometteurs (jusqu'à 98.96 \% d'accuracy en configuration E4). Ces résultats restent toutefois à consolider durant la phase finale du projet.
+
+\section*{Enseignements méthodologiques tirés à mi-parcours}
+
+\begin{itemize}
+  \item Un \textbf{baseline simple} (CNN \emph{from scratch}, $\sim$78 \% d'accuracy) est indispensable pour mesurer le gain réel de chaque amélioration apportée.
+  \item Le \textbf{transfer learning} depuis ImageNet est le levier d'amélioration majeur sur un dataset médical modéré ($\sim$7\,000 images).
+  \item Une stratégie de \textbf{fine-tuning en deux stages} (freeze puis dégel partiel) résout l'instabilité (\emph{catastrophic forgetting}) observée en fine-tuning naïf.
+  \item Le \textbf{suivi rigoureux des expériences} dans un tableau récapitulatif permet de distinguer les améliorations significatives des effets marginaux.
+  \item Les \textbf{contraintes matérielles} (VRAM 4 GB, multiprocessing Windows) imposent des compromis explicites (batch\_size = 24, num\_workers = 0) qui doivent être documentés.
+  \item Les \textbf{métriques multiples} (accuracy, F1, ROC, calibration) donnent une vision complète et nuancée des performances.
+\end{itemize}
+
+\section*{Travaux à venir avant la livraison finale}
+
+Le projet étant encore en phase de développement, plusieurs travaux restent à mener avant la livraison finale :
+
+\begin{enumerate}
+  \item \textbf{Cross-validation $k$-fold} (avec $k = 5$) pour confirmer la stabilité de l'accuracy reportée et obtenir un intervalle de confiance.
+  \item \textbf{Étude d'ablation} systématique pour quantifier la contribution individuelle de chaque composant (transfer learning, 2 stages, augmentation, class weights, dropout).
+  \item \textbf{Validation externe} sur un second dataset (par exemple BraTS ou TCGA-GBM) pour mesurer la généralisation hors distribution.
+  \item \textbf{Ensemble de modèles} : combinaison ResNet50 + DenseNet121 + EfficientNet-B0 par moyenne de softmax, gain attendu de l'ordre de 0.3 à 0.7 \% d'accuracy.
+  \item \textbf{Test-Time Augmentation (TTA)} : moyenne des prédictions sur 8 versions augmentées de chaque image en inférence.
+  \item \textbf{Quantization INT8} et export ONNX pour optimiser la latence et la taille du modèle ($\div$ 4).
+  \item \textbf{Validation utilisateur} de l'interface web et amélioration de la qualité visuelle des cartes Grad-CAM.
+  \item \textbf{Rédaction du rapport final} et préparation de la soutenance, en intégrant les résultats de la cross-validation et de l'ablation.
+\end{enumerate}
+
+Les choix techniques actuels sont validés à l'échelle intermédiaire ; ils restent à confirmer et à consolider durant les semaines restantes du projet. L'approche, dans tous les cas, demeure strictement à usage \textbf{éducatif} et ne remplace en aucun cas un diagnostic médical professionnel.
+
+\begin{warningbox}[Avertissement médical]
+Cet outil est destiné à un usage éducatif et de recherche uniquement. Il ne remplace pas un diagnostic médical professionnel. Consulter toujours un professionnel de santé qualifié.
+\end{warningbox}
+
+% ────────────────────────────────────────────────────────────────────────
+
+\vspace{1cm}
+
+\begin{center}
+{\color{cyan}\rule{0.6\textwidth}{1pt}}\\[0.5cm]
+{\large\bfseries\color{navy} TP6 — BrainScan AI}\\
+{\itshape\color{darkgray} ENSA Khouribga · IID1 · 2025/2026}\\[0.3cm]
+\textit{Fin du rapport — \today}
+\end{center}
+
+\end{document}

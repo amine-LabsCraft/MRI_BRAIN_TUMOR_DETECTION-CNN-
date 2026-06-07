@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install lint tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black
+
+      - name: Ruff
+        run: ruff check api/ src/ scripts/ dataset_stats/ tests/ start.py
+
+      - name: Black --check
+        run: black --check api/ src/ scripts/ tests/ start.py
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies (without model weights)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Compile all sources
+        run: |
+          python -m compileall -q api/ src/ scripts/ dataset_stats/ tests/ start.py
+
+      - name: Run dataset_stats tests (no model needed)
+        run: |
+          pytest tests/test_dataset_stats.py -v
+
+      # NOTE: tests/test_api.py needs the .pth checkpoint (95 MB).
+      # Either commit it via Git LFS, host it on a public URL,
+      # or skip in CI. Below is the skip pattern:
+      - name: Skip API tests in CI
+        run: echo "Skipping tests/test_api.py — checkpoint not available in CI runner"
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: brainscan-ai:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

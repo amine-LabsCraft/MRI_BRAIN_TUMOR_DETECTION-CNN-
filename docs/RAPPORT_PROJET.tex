@@ -1,0 +1,1690 @@
+% ╔══════════════════════════════════════════════════════════════════════╗
+% ║   BrainScan AI — Rapport de projet                                   ║
+% ║   Détection et classification de tumeurs cérébrales par IRM         ║
+% ║   ResNet50 · 98.96% accuracy · FastAPI · 22 analyses modulaires      ║
+% ╚══════════════════════════════════════════════════════════════════════╝
+
+\documentclass[11pt,a4paper,oneside]{report}
+
+% ─── Encoding & Language ────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% ─── Layout ─────────────────────────────────────────────────────────────
+\usepackage[a4paper, margin=2.2cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+\usepackage{microtype}
+
+% ─── Page break behaviour : éviter les blancs inutiles ──────────────────
+\raggedbottom                                  % ne force pas l'alignement bas
+\let\cleardoublepage\clearpage                  % chapitres sans page paire forcée
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.85}
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{4}
+\setcounter{totalnumber}{8}
+
+% ─── Color palette ──────────────────────────────────────────────────────
+\usepackage{xcolor}
+\definecolor{navy}{HTML}{0A2540}
+\definecolor{navylight}{HTML}{0F3460}
+\definecolor{cyan}{HTML}{00D4AA}
+\definecolor{cyandark}{HTML}{00B894}
+\definecolor{accentred}{HTML}{EF4444}
+\definecolor{accentorange}{HTML}{F59E0B}
+\definecolor{accentgreen}{HTML}{10B981}
+\definecolor{accentblue}{HTML}{3B82F6}
+\definecolor{lightgray}{HTML}{F1F5F9}
+\definecolor{darkgray}{HTML}{475569}
+
+% ─── Typography ─────────────────────────────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{navy}}
+  {\filleft\Large\textcolor{cyandark}{Chapitre~\thechapter}}
+  {0.6ex}
+  {\titlerule[1pt]\vspace{0.6ex}\filright}
+  [\vspace{0.3ex}{\titlerule[0.4pt]}]
+\titlespacing*{\chapter}{0pt}{-25pt}{14pt}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{navy}}
+  {\thesection}{1em}{}
+  [\vspace{0.2ex}{\color{cyan}\titlerule[0.5pt]}]
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{navylight}}
+  {\thesubsection}{0.8em}{}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries\color{cyandark}}
+  {\thesubsubsection}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{8pt}{3pt}
+
+% ─── Tables ─────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{makecell}
+\renewcommand{\arraystretch}{1.25}
+
+% ─── Code listings ──────────────────────────────────────────────────────
+\usepackage{listings}
+\lstdefinelanguage{Python}{
+  keywords={def, class, return, if, else, elif, for, while, in, import, from, as, with, try, except, finally, raise, lambda, yield, pass, break, continue, True, False, None, self, async, await},
+  keywordstyle=\color{accentblue}\bfseries,
+  ndkeywords={int, float, str, bool, list, dict, tuple, set, None},
+  ndkeywordstyle=\color{accentorange}\bfseries,
+  sensitive=true,
+  comment=[l]{\#},
+  commentstyle=\color{darkgray}\itshape,
+  morestring=[b]",
+  morestring=[b]',
+  stringstyle=\color{accentgreen},
+}
+\lstdefinelanguage{Bash}{
+  keywords={cd, ls, mkdir, rm, cp, mv, python, pip, git, docker, pytest, ruff, black, uvicorn, streamlit},
+  keywordstyle=\color{accentblue}\bfseries,
+  sensitive=true,
+  comment=[l]{\#},
+  commentstyle=\color{darkgray}\itshape,
+  morestring=[b]",
+}
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{darkgray},
+  stepnumber=1,
+  numbersep=8pt,
+  backgroundcolor=\color{lightgray},
+  showspaces=false,
+  showstringspaces=false,
+  frame=leftline,
+  framesep=8pt,
+  rulecolor=\color{cyan},
+  framerule=2pt,
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=4,
+  captionpos=b,
+}
+
+% ─── Boxes & callouts ───────────────────────────────────────────────────
+\usepackage[most]{tcolorbox}
+\tcbset{
+  colback=lightgray,
+  colframe=cyan,
+  boxrule=0.5pt,
+  arc=4pt,
+  fonttitle=\bfseries,
+}
+\newtcolorbox{infobox}[1][]{
+  colback=lightgray, colframe=cyandark,
+  fonttitle=\bfseries\color{white}, coltitle=white,
+  title=#1, sharp corners=northwest, arc=4pt,
+}
+\newtcolorbox{warningbox}[1][]{
+  colback=yellow!10, colframe=accentorange,
+  fonttitle=\bfseries, title=#1, arc=4pt,
+}
+\newtcolorbox{successbox}[1][]{
+  colback=green!5, colframe=accentgreen,
+  fonttitle=\bfseries, title=#1, arc=4pt,
+}
+
+% ─── Hyperlinks ─────────────────────────────────────────────────────────
+\usepackage[hidelinks, colorlinks=true, linkcolor=navy, urlcolor=cyandark, citecolor=cyandark]{hyperref}
+\usepackage{url}
+
+% ─── Header / Footer ───────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{navy}{\small\nouppercase{\leftmark}}}
+\fancyhead[R]{\textcolor{cyandark}{\small\bfseries BrainScan AI}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{cyan}\leaders\hrule height \headrulewidth\hfill}}
+
+% ─── Misc ───────────────────────────────────────────────────────────────
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*, itemsep=2pt}
+\setlist[enumerate]{leftmargin=*, itemsep=2pt}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{labelfont={bf,color=cyandark}, font=small}
+
+% Symbols for check/cross marks (pifont must be loaded BEFORE the commands)
+\usepackage{pifont}
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+
+\newcommand{\code}[1]{\texttt{\textcolor{navy}{#1}}}
+\newcommand{\rt}[1]{\textcolor{accentred}{#1}}
+\newcommand{\og}[1]{\textcolor{accentorange}{#1}}
+\newcommand{\gn}[1]{\textcolor{accentgreen}{#1}}
+\newcommand{\bl}[1]{\textcolor{accentblue}{#1}}
+
+% ════════════════════════════════════════════════════════════════════════
+% TITLE PAGE
+% ════════════════════════════════════════════════════════════════════════
+\title{}
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\color{cyan}\rule{\textwidth}{1.5pt}}
+
+\vspace{1.5cm}
+
+{\Huge\bfseries\color{navy} BrainScan AI}\\[0.5cm]
+{\Large\color{darkgray}\itshape Rapport de Projet}\\[1cm]
+
+{\LARGE\bfseries\color{navylight} Détection et classification\\ de tumeurs cérébrales par IRM}
+
+\vspace{0.8cm}
+
+{\large\color{darkgray}
+ResNet50 · Transfer Learning · Grad-CAM\\
+98.96\% accuracy · 22 analyses modulaires · Production-ready
+}
+
+\vspace{1.5cm}
+
+{\color{cyan}\rule{0.6\textwidth}{0.8pt}}
+
+\vspace{1cm}
+
+\begin{tabular}{rl}
+{\large\bfseries\color{navy} Modèle :} & ResNet50 (Transfer Learning ImageNet) \\
+{\large\bfseries\color{navy} Précision test :} & \textbf{\color{accentgreen} 98.96\%} sur 1\,054 images \\
+{\large\bfseries\color{navy} Stack :} & PyTorch · FastAPI · Vanilla JS · Docker \\
+{\large\bfseries\color{navy} Tests :} & 17/17 passing · CI GitHub Actions \\
+{\large\bfseries\color{navy} Documentation :} & 17 READMEs + 17 FLOW.md \\
+\end{tabular}
+
+\vfill
+
+{\color{cyan}\rule{\textwidth}{1.5pt}}
+
+\vspace{0.5cm}
+
+{\large\color{darkgray} \today}
+
+\vspace{1cm}
+
+\begin{warningbox}[Avertissement médical]
+Cet outil est destiné à un \textbf{usage éducatif et de recherche uniquement}.
+Il ne remplace en aucun cas un diagnostic médical professionnel.
+Consulter toujours un professionnel de santé qualifié.
+\end{warningbox}
+
+\end{titlepage}
+
+% ════════════════════════════════════════════════════════════════════════
+% RÉSUMÉ EXÉCUTIF
+% ════════════════════════════════════════════════════════════════════════
+\chapter*{Résumé exécutif}
+\addcontentsline{toc}{chapter}{Résumé exécutif}
+
+\textbf{BrainScan AI} est un système complet d'intelligence artificielle médicale qui classifie automatiquement les IRM cérébrales en quatre catégories : \rt{\textbf{Glioma}}, \og{\textbf{Méningiome}}, \gn{\textbf{Aucune tumeur}} et \bl{\textbf{Tumeur hypophysaire}}.
+
+Le projet couvre l'\textbf{intégralité du cycle de vie d'un produit ML} : préparation du dataset Kaggle (7\,023 images), entraînement par transfer learning en deux stages d'un ResNet50, évaluation rigoureuse sur 1\,054 images de test, génération automatique de 22 figures statistiques, et déploiement via une API REST FastAPI accompagnée d'une interface web Vanilla JS premium et d'une alternative Streamlit.
+
+\begin{successbox}[Performances obtenues]
+\begin{itemize}
+\item \textbf{Test accuracy :} 98.96\% (1\,043/1\,054 corrects)
+\item \textbf{Inférence CPU :} $\sim$36 ms/image · \textbf{GPU :} $\sim$10 ms/image
+\item \textbf{Grad-CAM} en temps réel via hooks PyTorch (interprétabilité)
+\item \textbf{Tests :} 17/17 passing en moins de 10 secondes
+\item \textbf{Architecture modulaire} : 22 analyses auto-découvertes, sans modification du code central
+\end{itemize}
+\end{successbox}
+
+Le code suit les meilleures pratiques modernes : containerisation Docker multi-stage, pipeline CI/CD GitHub Actions (lint $\to$ test $\to$ build), pre-commit hooks, configuration via variables d'environnement \code{.env}, rate limiting et authentification optionnelle par clé API. La documentation est exhaustive avec 17 READMEs détaillés et 17 fichiers FLOW.md offrant des arbres de décision visuels pour chaque composant.
+
+% ════════════════════════════════════════════════════════════════════════
+% TOC
+% ════════════════════════════════════════════════════════════════════════
+\tableofcontents
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 1 — INTRODUCTION
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Introduction}
+
+\section{Contexte médical}
+
+Les tumeurs cérébrales représentent un défi diagnostique majeur en neurologie. Selon les statistiques mondiales, environ 308\,000 nouveaux cas sont diagnostiqués chaque année. Les quatre classes principales que ce projet adresse sont :
+
+\begin{table}[!htbp]
+\centering
+\caption{Les quatre classes ciblées par le modèle}
+\begin{tabularx}{\textwidth}{|l|X|l|}
+\hline
+\rowcolor{}
+\textbf{Classe} & \textbf{Description} & \textbf{Prévalence} \\
+\hline
+\rt{\textbf{Glioma}} & Tumeur maligne provenant des cellules gliales (haute gravité) & $\sim$3 / 100\,000 / an \\
+\hline
+\og{\textbf{Méningiome}} & Tumeur généralement bénigne issue des méninges & $\sim$7.8 / 100\,000 \\
+\hline
+\bl{\textbf{Hypophysaire}} & Adénome de la glande hypophyse (souvent bénin) & $\sim$77 / 100\,000 \\
+\hline
+\gn{\textbf{Aucune tumeur}} & Cerveau dans les limites normales & --- \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Problématique}
+
+Le diagnostic manuel par radiologue prend du temps et reste subjectif. Un système d'aide à la décision basé sur le \textbf{deep learning} peut :
+\begin{itemize}
+\item Pré-classer rapidement les scans en quelques millisecondes
+\item Fournir une \textbf{carte d'attention Grad-CAM} pour expliquer la décision
+\item Servir comme deuxième avis pour les radiologues
+\item Faciliter l'enseignement et la recherche
+\end{itemize}
+
+\section{Objectifs du projet}
+
+\begin{enumerate}
+\item Construire un classifieur 4-classes performant ($>$ 95\% accuracy)
+\item Garantir l'\textbf{interprétabilité} via Grad-CAM
+\item Déployer une \textbf{API REST production-ready} avec sécurité
+\item Fournir une \textbf{interface web moderne} sans framework lourd
+\item Assurer la \textbf{reproductibilité} (Docker, CI/CD, tests)
+\item Documenter exhaustivement chaque composant
+\end{enumerate}
+
+\section{Stack technique global}
+
+\begin{table}[!htbp]
+\centering
+\caption{Technologies utilisées}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Catégorie} & \textbf{Outils} \\
+\hline
+Deep Learning & PyTorch 2.11 · torchvision · CUDA 11.8 (optionnel) \\
+\hline
+Backend API & FastAPI · uvicorn · slowapi · python-dotenv \\
+\hline
+Frontend & Vanilla JS ES2020 · Chart.js 4.4 · Lucide · jsPDF \\
+\hline
+UI alternative & Streamlit 1.25+ \\
+\hline
+Données & NumPy · Pandas · OpenCV · Pillow · Albumentations \\
+\hline
+Visualisation & Matplotlib · Seaborn · Scikit-learn \\
+\hline
+Tests & pytest · pytest-cov · httpx (TestClient) \\
+\hline
+Lint / Format & ruff · black · mypy · pre-commit \\
+\hline
+Container & Docker multi-stage · docker compose · Nginx \\
+\hline
+CI/CD & GitHub Actions \\
+\hline
+\end{tabularx}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 2 — ARCHITECTURE
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Architecture globale du projet}
+
+\section{Vue d'ensemble}
+
+Le projet est organisé en \textbf{16 dossiers top-level} avec une séparation claire des responsabilités. Chaque dossier dispose d'un \code{README.md} (description détaillée) et d'un \code{FLOW.md} (arbre de décision visuel des étapes).
+
+\begin{figure}[!htbp]
+\centering
+\fbox{\begin{minipage}{0.95\textwidth}
+\small\ttfamily
+mri\_brain\_tumor-main/\\
+├── \textbf{LANCEURS}\\
+│\hspace{0.5cm}├── start.py \hspace{2.2cm}{\color{darkgray}\# Lanceur cross-platform}\\
+│\hspace{0.5cm}├── start.bat / stop.bat \hspace{0.5cm}{\color{darkgray}\# Windows}\\
+│\\
+├── \textbf{CODE APPLICATIF}\\
+│\hspace{0.5cm}├── api/ \hspace{2.4cm}{\color{darkgray}\# FastAPI port 8000}\\
+│\hspace{0.5cm}├── interface/ \hspace{1.8cm}{\color{darkgray}\# Frontend Vanilla JS port 3000}\\
+│\hspace{0.5cm}├── streamlit\_app/ \hspace{1.4cm}{\color{darkgray}\# Streamlit port 8501}\\
+│\hspace{0.5cm}├── src/ \hspace{2.5cm}{\color{darkgray}\# Modules PyTorch}\\
+│\hspace{0.5cm}└── scripts/ \hspace{2.0cm}{\color{darkgray}\# CLI entry points}\\
+│\\
+├── \textbf{ANALYSES \& TESTS}\\
+│\hspace{0.5cm}├── dataset\_stats/ \hspace{1.3cm}{\color{darkgray}\# 22 analyses auto-découvertes}\\
+│\hspace{0.5cm}└── tests/ \hspace{2.2cm}{\color{darkgray}\# 17 tests pytest}\\
+│\\
+├── \textbf{DONNÉES}\\  
+│\hspace{0.5cm}├── data/ \hspace{2.4cm}{\color{darkgray}\# raw → processed → splits}\\
+│\hspace{0.5cm}├── models/ \hspace{2.1cm}{\color{darkgray}\# Checkpoints .pth}\\
+│\hspace{0.5cm}├── logs/ \hspace{2.4cm}{\color{darkgray}\# Training history CSV}\\
+│\hspace{0.5cm}└── results/ \hspace{2.0cm}{\color{darkgray}\# Eval outputs}\\
+│\\
+└── \textbf{INFRASTRUCTURE}\\
+\hspace{0.4cm}├── docs/ \hspace{2.4cm}{\color{darkgray}\# Documentation par phase}\\
+\hspace{0.4cm}├── legacy/ \hspace{2.1cm}{\color{darkgray}\# Code TF archivé}\\
+\hspace{0.4cm}├── .github/ \hspace{2.0cm}{\color{darkgray}\# CI/CD GitHub Actions}\\
+\hspace{0.4cm}├── Dockerfile + compose \hspace{0.3cm}{\color{darkgray}\# Containerisation}\\
+\hspace{0.4cm}├── pyproject.toml \hspace{1.4cm}{\color{darkgray}\# Config black/ruff/pytest}\\
+\hspace{0.4cm}└── .env.example \hspace{1.6cm}{\color{darkgray}\# Config runtime}
+\end{minipage}}
+\caption{Arborescence du projet (vue synthétique)}
+\end{figure}
+
+\section{Pipeline complet en 6 phases}
+
+\begin{infobox}[Les 6 phases du projet]
+\begin{enumerate}
+\item \textbf{Phase 1 — Préparation des données} : Kaggle $\to$ resize $\to$ normalize $\to$ split
+\item \textbf{Phase 2 — Entraînement} : ResNet50 + transfer learning 2 stages
+\item \textbf{Phase 3 — Évaluation} : Test set 1\,054 images $\to$ métriques $+$ figures
+\item \textbf{Phase 4 — Statistiques modulaires} : 22 analyses auto-découvertes
+\item \textbf{Phase 5 — Déploiement} : API + frontend + Docker
+\item \textbf{Phase 6 — Qualité} : Tests, CI/CD, pre-commit
+\end{enumerate}
+\end{infobox}
+
+\section{Principes de design}
+
+Le projet repose sur cinq principes fondateurs :
+
+\begin{description}
+\item[\textbf{Modularité}] Chaque dossier a une responsabilité unique. \code{src/} contient uniquement les modules réutilisables. \code{scripts/} contient uniquement des entry points CLI. \code{api/} contient uniquement le serveur FastAPI.
+
+\item[\textbf{Auto-découverte}] Le dossier \code{dataset\_stats/analyses/} utilise un \textbf{registry pattern} : déposer un nouveau fichier \code{figXX\_*.py} le rend automatiquement disponible via le CLI, sans modifier aucun fichier central.
+
+\item[\textbf{Reproductibilité}] Tous les paramètres sont centralisés (\code{config.json}, \code{.env}, \code{pyproject.toml}). Les seeds sont fixées (\code{RANDOM\_SEED=42}). Le pipeline est idempotent.
+
+\item[\textbf{Configurabilité}] Les variables runtime passent par \code{.env} (CORS, API key, rate limit, log level). Aucun secret en dur.
+
+\item[\textbf{Documentation par dossier}] 17 READMEs $+$ 17 FLOW.md couvrent l'intégralité du projet, avec liens croisés.
+\end{description}
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 3 — PHASE 1
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Phase 1 : Préparation des données}
+
+\section{Source du dataset}
+
+Le projet utilise le dataset Kaggle public \href{https://www.kaggle.com/datasets/sartajbhuvaji/brain-tumor-classification-mri}{\textbf{Brain Tumor Classification MRI}} de Sartaj Bhuvaji, contenant \textbf{7\,023 images} d'IRM cérébrales en JPEG/PNG, classées en 4 catégories.
+
+\begin{table}[!htbp]
+\centering
+\caption{Distribution du dataset Kaggle}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Classe} & \textbf{Training} & \textbf{Testing} \\
+\midrule
+Glioma      & 1\,321 & 300 \\
+Meningioma  & 1\,339 & 306 \\
+No Tumor    & 1\,595 & 405 \\
+Pituitary   & 1\,457 & 300 \\
+\midrule
+\textbf{Total} & \textbf{5\,712} & \textbf{1\,311} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Pipeline de prétraitement}
+
+Le module \code{src/data\_pipeline.py} orchestre l'ensemble du prétraitement avec ces étapes :
+
+\begin{lstlisting}[language=Bash, caption={Étapes du prétraitement}]
+1. Validation       (PIL.open → détecte fichiers corrompus)
+2. Conversion RGB   (grayscale → 3 channels, RGBA → drop alpha)
+3. Resize 256       (maintient aspect ratio + padding noir)
+4. CenterCrop 224   (recadrage centré 224x224)
+5. Normalize        (uint8[0,255] → float32[0,1] + ImageNet stats)
+6. Save .npy        (binaire numpy, ~4x plus rapide que JPEG)
+\end{lstlisting}
+
+\textbf{Pourquoi le format .npy ?}
+\begin{itemize}
+\item Chargement \textbf{4 fois plus rapide} qu'un JPEG décodé à chaque batch
+\item Stockage en \code{float32} déjà normalisé (pas de conversion en runtime)
+\item Compatible direct avec \code{torch.from\_numpy()}
+\item Léger reproches : taille $\sim$2 GB total, mais acceptable
+\end{itemize}
+
+\section{Augmentation des données (Albumentations)}
+
+L'augmentation est appliquée \textbf{uniquement au train set}, à la volée dans le \code{DataLoader}. Le pipeline utilise la bibliothèque Albumentations pour ses performances supérieures à \code{torchvision.transforms} :
+
+\begin{lstlisting}[language=Python, caption={Pipeline d'augmentation Albumentations}]
+train_transform = A.Compose([
+    A.HorizontalFlip(p=0.5),
+    A.RandomRotate90(p=0.3),
+    A.Rotate(limit=15, p=0.4),                # rotation -15 / +15
+    A.RandomResizedCrop(scale=(0.85, 1.0)),    # zoom in/out leger
+    A.RandomBrightnessContrast(0.2, p=0.4),    # luminosite +/- 20%
+    A.GaussNoise(var_limit=(10, 50), p=0.2),   # bruit Gaussien
+    A.ElasticTransform(p=0.2),                  # deformation organique
+    A.Normalize([0.485, 0.456, 0.406],
+                [0.229, 0.224, 0.225]),
+    ToTensorV2(),
+])
+\end{lstlisting}
+
+Le val/test set ne reçoit que la \code{Normalize} pour conserver une évaluation déterministe.
+
+\section{Split stratifié}
+
+Le module \code{src/dataset\_split.py} sépare les images en train/val/test en \textbf{préservant la distribution des classes} grâce à \code{sklearn.model\_selection.StratifiedShuffleSplit} :
+
+\begin{table}[!htbp]
+\centering
+\caption{Splits finaux (seed=42, stratifié)}
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Split} & \textbf{Images} & \textbf{Ratio} & \textbf{Usage} \\
+\midrule
+Train & 4\,915 & 70\% & Apprentissage des poids \\
+Val   & 1\,054 & 15\% & EarlyStopping, ReduceLROnPlateau \\
+Test  & 1\,054 & 15\% & Évaluation finale (jamais vu pendant train) \\
+\midrule
+\textbf{Total} & \textbf{7\,023} & \textbf{100\%} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Le résultat est sauvegardé dans \code{data/splits/split\_info.json} (632 KB) qui sert de \textbf{source de vérité unique} pour tous les autres modules (training, evaluation, dataset\_stats).
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 4 — PHASE 2
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Phase 2 : Entraînement du modèle}
+
+\section{Architecture du modèle}
+
+Le modèle est défini dans \code{src/model\_architecture.py} et combine deux éléments :
+
+\begin{enumerate}
+\item Un \textbf{backbone ResNet50} pré-entraîné sur ImageNet (transfer learning)
+\item Une \textbf{tête de classification custom} adaptée à 4 classes
+\end{enumerate}
+
+\begin{figure}[!htbp]
+\centering
+\fbox{\begin{minipage}{0.85\textwidth}
+\small\ttfamily
+Input: RGB tensor (B, 3, 224, 224)\\
+\hspace{4cm}|\\
+\hspace{4cm}v\\
++-----------------------------------+\\
+|  \textbf{ResNet50 backbone}         \hspace{0.4cm}|\\
+|  - conv1 -> bn1 -> relu -> maxpool|\\
+|  - layer1 (3x Bottleneck, 256)    |\\
+|  - layer2 (4x Bottleneck, 512)    |\\
+|  - layer3 (6x Bottleneck, 1024)   |\\
+|  - layer4 (3x Bottleneck, 2048) <-- hooks Grad-CAM\\
+|  - avgpool -> flatten              |\\
+|  base\_model.fc = Identity()        |\\
++----------------+------------------+\\
+\hspace{4cm}|  (B, 2048)\\
+\hspace{4cm}v\\
++-----------------------------------+\\
+|  \textbf{Custom classifier head}   \hspace{0.6cm}|\\
+|  Linear(2048 -> 512)               |\\
+|  ReLU                              |\\
+|  BatchNorm1d(512)                  |\\
+|  Dropout(0.4)                      |\\
+|  Linear(512 -> 4)                   |\\
++----------------+------------------+\\
+\hspace{4cm}|  (B, 4)\\
+\hspace{4cm}v\\
+\hspace{2cm}Logits -> Softmax -> 4 classes
+\end{minipage}}
+\caption{Architecture ResNet50Classifier}
+\end{figure}
+
+\begin{table}[!htbp]
+\centering
+\caption{Distribution des paramètres}
+\begin{tabular}{lrll}
+\toprule
+\textbf{Couches} & \textbf{Params} & \textbf{Stage 1} & \textbf{Stage 2} \\
+\midrule
+ResNet50 backbone   & $\sim$23.5M  & \rt{frozen} & \og{30 dernières dégelées} \\
+Tête custom         & $\sim$1.05M  & \gn{trainable} & \gn{trainable} \\
+\midrule
+\textbf{Total}      & \textbf{$\sim$24.6M} & $\sim$1.05M & $\sim$15M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Stratégie de transfer learning en 2 stages}
+
+Le \code{PyTorchTrainer} (dans \code{src/model\_trainer.py}) implémente une stratégie en deux temps qui surpasse l'entraînement classique :
+
+\begin{infobox}[Stage 1 — Adaptation rapide de la tête]
+\begin{itemize}
+\item \textbf{Durée} : 20 époques
+\item \textbf{Learning rate} : $1\!\times\!10^{-3}$ (élevé pour faire bouger rapidement la tête)
+\item \textbf{Backbone} : entièrement gelé (\code{freeze\_base\_layers()})
+\item \textbf{Trainable params} : $\sim$1M (seulement la tête)
+\item \textbf{Goal} : adapter rapidement les features ImageNet à la tâche médicale
+\end{itemize}
+\end{infobox}
+
+\begin{infobox}[Stage 2 — Fine-tuning précis]
+\begin{itemize}
+\item \textbf{Durée} : 30 époques
+\item \textbf{Learning rate} : $1\!\times\!10^{-4}$ (10$\times$ plus petit)
+\item \textbf{Backbone} : 30 dernières couches dégelées (\code{unfreeze\_base\_layers(num\_layers=30)})
+\item \textbf{Trainable params} : $\sim$15M
+\item \textbf{Goal} : affiner subtilement les features bas-niveau pour la spécificité médicale
+\end{itemize}
+\end{infobox}
+
+\subsection{Pourquoi 2 stages ?}
+
+\begin{table}[!htbp]
+\centering
+\caption{Comparaison entraînement classique vs 2 stages}
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\rowcolor{accentred!15}
+\textbf{Sans 2 stages} & \rowcolor{accentgreen!15}\textbf{Avec 2 stages} \\
+\hline
+LR trop élevé sur ResNet $\to$ \textbf{catastrophic forgetting} & Stage 1 stabilise la tête sans toucher au backbone \\
+\hline
+Convergence en $\sim$50 époques avec instabilités & Convergence en $\sim$30-40 époques avec courbes lisses \\
+\hline
+Risque d'overfitting tête vs backbone & Découplage clair des phases \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Callbacks et optimisations}
+
+\begin{itemize}
+\item \textbf{EarlyStopping} (patience=7) : arrête si \code{val\_loss} ne décroît plus
+\item \textbf{ReduceLROnPlateau} (factor=0.5, patience=3) : divise le LR par 2 si stagnation
+\item \textbf{ModelCheckpoint} : sauvegarde le meilleur modèle (sur \code{val\_loss})
+\item \textbf{TensorBoard} : log par batch pour monitoring fin
+\item \textbf{Class weights} : compensation automatique de l'imbalance des classes
+\end{itemize}
+
+\section{Hyperparamètres complets}
+
+\begin{table}[!htbp]
+\centering
+\caption{Configuration par défaut (\code{get\_default\_config()})}
+\begin{tabular}{lr}
+\toprule
+\textbf{Paramètre} & \textbf{Valeur} \\
+\midrule
+\code{num\_classes} & 4 \\
+\code{image\_size} & 224 \\
+\code{batch\_size} & 24 \\
+\code{num\_workers} & 0 (Windows-friendly) \\
+\code{dense\_units} & 512 \\
+\code{dropout\_rate} & 0.4 \\
+\code{learning\_rate\_s1} & $1\!\times\!10^{-3}$ \\
+\code{learning\_rate\_s2} & $1\!\times\!10^{-4}$ \\
+\code{epochs\_stage1} & 20 \\
+\code{epochs\_stage2} & 30 \\
+\code{weight\_decay} & $1\!\times\!10^{-4}$ \\
+\code{optimizer} & Adam \\
+\code{loss} & CrossEntropyLoss + class\_weights \\
+\code{early\_stopping\_patience} & 7 \\
+\code{lr\_reduce\_factor} & 0.5 \\
+\code{lr\_reduce\_patience} & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Durée d'entraînement}
+
+\begin{itemize}
+\item \textbf{CPU (Intel i5/i7)} : 4--6 heures pour 50 époques
+\item \textbf{GPU NVIDIA RTX 4060 (8 GB VRAM)} : 10--12 minutes
+\item \textbf{Mémoire VRAM} : $\sim$3.2 GB occupés avec \code{batch\_size=24}
+\end{itemize}
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 5 — PHASE 3
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Phase 3 : Évaluation}
+
+\section{Procédure d'évaluation}
+
+Le script \code{scripts/evaluate.py} charge le dernier checkpoint dans \code{models/} et l'évalue sur les \textbf{1\,054 images de test} (jamais vues pendant l'entraînement).
+
+\begin{lstlisting}[language=Python, caption={Pipeline d'évaluation simplifié}]
+model = ResNet50Classifier(num_classes=4, pretrained=False)
+model.load_state_dict(checkpoint["model_state_dict"])
+model.to(device).eval()
+
+with torch.no_grad():
+    for x, y in test_loader:
+        outputs = model(x.to(device))
+        probs = F.softmax(outputs, dim=1)
+        preds = torch.argmax(probs, dim=1)
+        # accumule y_true, y_pred, y_proba
+\end{lstlisting}
+
+\section{Résultats globaux}
+
+\begin{successbox}[Performance finale]
+\centering
+\Huge\bfseries\color{accentgreen} 98.96\%
+\normalsize\\[0.3cm]
+\textbf{1\,043 / 1\,054 images correctement classifiées}
+\end{successbox}
+
+\section{Métriques par classe}
+
+\begin{table}[!htbp]
+\centering
+\caption{Classification report sur le test set}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Classe} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-score} & \textbf{Support} \\
+\midrule
+\rt{Glioma}      & 0.99 & 0.99 & 0.99 & 260 \\
+\og{Meningioma}  & 0.98 & 0.98 & 0.98 & 257 \\
+\gn{No Tumor}    & 1.00 & 1.00 & 1.00 & 273 \\
+\bl{Pituitary}   & 0.99 & 0.99 & 0.99 & 264 \\
+\midrule
+\textbf{Macro avg}    & \textbf{0.99} & \textbf{0.99} & \textbf{0.99} & 1\,054 \\
+\textbf{Weighted avg} & \textbf{0.99} & \textbf{0.99} & \textbf{0.99} & 1\,054 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Matrice de confusion}
+
+\begin{table}[!htbp]
+\centering
+\caption{Matrice de confusion (true vs predicted)}
+\begin{tabular}{l|cccc}
+\toprule
+& \rt{Glioma} & \og{Meningioma} & \gn{No Tumor} & \bl{Pituitary} \\
+\midrule
+\rt{Glioma}      & \textbf{257} & 2 & 0 & 1 \\
+\og{Meningioma}  & 3 & \textbf{252} & 0 & 2 \\
+\gn{No Tumor}    & 0 & 1 & \textbf{272} & 0 \\
+\bl{Pituitary}   & 1 & 1 & 0 & \textbf{262} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Observations} :
+\begin{itemize}
+\item La classe \gn{No Tumor} est presque parfaitement détectée (272/273)
+\item Les confusions principales sont \rt{Glioma} $\leftrightarrow$ \og{Meningioma} (5 erreurs au total) — c'est cohérent car ces deux types peuvent visuellement se ressembler en IRM
+\item Aucune confusion grave entre tumeur et non-tumeur
+\end{itemize}
+
+\section{Performances temporelles}
+
+\begin{table}[!htbp]
+\centering
+\caption{Latence d'inférence selon le device}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Device} & \textbf{Latence/image} & \textbf{Throughput} \\
+\midrule
+GPU NVIDIA RTX 4060 & $\sim$10 ms & $\sim$100 img/s \\
+CPU Intel i7 (8 cores) & $\sim$36 ms & $\sim$28 img/s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Sorties d'évaluation}
+
+L'évaluation produit dans \code{results/} :
+\begin{itemize}
+\item \code{evaluation\_summary.txt} : métriques globales formattées
+\item \code{test\_results.csv} : prédictions par image (1\,054 lignes)
+\item \code{confusion\_matrix.png} : heatmap seaborn
+\item \code{class\_performance.png} : bar chart P/R/F1
+\item \code{training\_history.png} : courbes loss/accuracy (via \code{visualize\_training.py})
+\end{itemize}
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 6 — PHASE 4 (DATASET STATS)
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Phase 4 : Statistiques modulaires (22 analyses)}
+
+\section{Architecture par registre}
+
+Le dossier \code{dataset\_stats/} implémente une \textbf{architecture auto-adaptative} où chaque analyse est un fichier autonome auto-découvert. Aucun fichier central ne nécessite de modification pour ajouter une 23$^{\text{e}}$ analyse.
+
+\begin{infobox}[Principe : 1 fichier = 1 analyse]
+Déposer un fichier \code{analyses/figXX\_*.py} respectant le contrat (NAME, TITLE, CATEGORY, REQUIRES, ORDER, run()) le rend immédiatement disponible via le CLI \code{python dataset\_stats/run.py --list}.
+\end{infobox}
+
+\section{Structure du package}
+
+\begin{figure}[!htbp]
+\centering
+\fbox{\begin{minipage}{0.85\textwidth}
+\small\ttfamily
+dataset\_stats/\\
+├── run.py \hspace{2.5cm}{\color{darkgray}\# CLI : --list --only --except --filter --category}\\
+│\\
+├── core/ \hspace{2.6cm}{\color{darkgray}\# Infrastructure partagée}\\
+│\hspace{0.5cm}├── config.py \hspace{1.5cm}{\color{darkgray}\# Constantes (paths, classes, couleurs)}\\
+│\hspace{0.5cm}├── data.py \hspace{1.9cm}{\color{darkgray}\# Helpers I/O (load\_npy, list\_class\_files...)}\\
+│\hspace{0.5cm}├── plotting.py \hspace{1.4cm}{\color{darkgray}\# matplotlib + save\_figure (par catégorie)}\\
+│\hspace{0.5cm}└── registry.py \hspace{1.4cm}{\color{darkgray}\# Auto-découverte}\\
+│\\
+├── analyses/ \hspace{1.9cm}{\color{darkgray}\# 22 modules autonomes}\\
+│\hspace{0.5cm}├── fig01\_class\_distribution.py\\
+│\hspace{0.5cm}├── fig02\_split\_distribution.py\\
+│\hspace{0.5cm}├── ...\\
+│\hspace{0.5cm}└── fig22\_class\_focus\_confusion.py\\
+│\\
+└── outputs/ \hspace{2.0cm}{\color{darkgray}\# Généré (auto-organisé par catégorie)}\\
+\hspace{0.4cm}├── figures/\{overview,image,training,evaluation,errors\}/\\
+\hspace{0.4cm}├── data/\{idem\}/\\
+\hspace{0.4cm}└── summary.json
+\end{minipage}}
+\caption{Architecture du package \code{dataset\_stats/}}
+\end{figure}
+
+\section{Catalogue des 22 analyses}
+
+\subsection{Vue d'ensemble (overview) — 2 analyses}
+
+\begin{table}[!htbp]
+\centering
+\begin{tabularx}{\textwidth}{|c|l|X|}
+\hline
+\textbf{\#} & \textbf{Analyse} & \textbf{Description} \\
+\hline
+01 & \code{class\_distribution} & Bar + pie chart par classe \\
+02 & \code{split\_distribution} & Stratified train/val/test 70/15/15 \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Propriétés des images (image) — 9 analyses}
+
+\begin{table}[!htbp]
+\centering
+\begin{tabularx}{\textwidth}{|c|l|X|}
+\hline
+\textbf{\#} & \textbf{Analyse} & \textbf{Description} \\
+\hline
+03 & \code{pixel\_statistics} & Mean / std / min / max par classe \\
+04 & \code{image\_properties} & Carte info (sizes, channels, dtype) \\
+05 & \code{sample\_grid} & Grille 5 exemples par classe \\
+06 & \code{augmentation\_examples} & Original vs 7 transformations \\
+10 & \code{intensity\_histograms} & Distribution intensité (overlay+KDE) \\
+17 & \code{mean\_image} & Image moyenne pixel-wise par classe \\
+19 & \code{channel\_stats} & Mean/std par canal R/G/B \\
+20 & \code{image\_entropy} & Distribution Shannon entropy \\
+21 & \code{class\_similarity} & Matrice cosine inter-classes \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Entraînement (training) — 2 analyses}
+
+\begin{table}[!htbp]
+\centering
+\begin{tabularx}{\textwidth}{|c|l|X|}
+\hline
+\textbf{\#} & \textbf{Analyse} & \textbf{Description} \\
+\hline
+07 & \code{training\_history} & Courbes loss/acc 50 époques (Stage 1+2) \\
+13 & \code{lr\_schedule} & Visualisation du LR scheduler \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Évaluation (evaluation) — 5 analyses}
+
+\begin{table}[!htbp]
+\centering
+\begin{tabularx}{\textwidth}{|c|l|X|}
+\hline
+\textbf{\#} & \textbf{Analyse} & \textbf{Description} \\
+\hline
+08 & \code{confusion\_matrix} & Heatmap counts + recall normalisé \\
+09 & \code{per\_class\_metrics} & Precision/Recall/F1 par classe \\
+14 & \code{roc\_curves} & ROC one-vs-rest + AUC par classe \\
+15 & \code{pr\_curves} & Precision-Recall + Average Precision \\
+16 & \code{calibration} & Reliability diagram + Brier score \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Analyse des erreurs (errors) — 4 analyses}
+
+\begin{table}[!htbp]
+\centering
+\begin{tabularx}{\textwidth}{|c|l|X|}
+\hline
+\textbf{\#} & \textbf{Analyse} & \textbf{Description} \\
+\hline
+11 & \code{confidence\_distribution} & Confiance correct vs erreur (boxplot) \\
+12 & \code{misclassification} & Top patterns d'erreur + error rate \\
+18 & \code{top\_predictions} & Top-1 vs Top-2 vs Top-3 accuracy \\
+22 & \code{class\_focus\_confusion} & 4 mini-matrices "1 vs rest" \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Mécanisme d'auto-découverte}
+
+Le cœur du système est dans \code{core/registry.py} :
+
+\begin{lstlisting}[language=Python, caption={Pseudo-code du registry}]
+def discover() -> list[RegisteredAnalysis]:
+    items = []
+    for py_file in glob("analyses/fig*.py"):
+        mod = importlib.import_module(f"analyses.{py_file.stem}")
+        items.append(RegisteredAnalysis(
+            name=mod.NAME,
+            title=mod.TITLE,
+            category=mod.CATEGORY,
+            requires=mod.REQUIRES,
+            order=mod.ORDER,
+            run=mod.run,
+        ))
+    return sorted(items, key=lambda x: x.order)
+\end{lstlisting}
+
+\section{Organisation automatique des sorties}
+
+Une astuce élégante : le module \code{plotting.py} maintient un \textbf{contexte global} de catégorie qui est posé/libéré par le registry autour de chaque \code{run()} :
+
+\begin{lstlisting}[language=Python, caption={Context manager de catégorie}]
+# core/plotting.py
+_CURRENT_CATEGORY = None
+
+def set_current_category(cat):
+    global _CURRENT_CATEGORY
+    _CURRENT_CATEGORY = cat
+
+def save_figure(fig, name, *, category=None):
+    cat = category or _CURRENT_CATEGORY
+    out = FIGURES_DIR / cat if cat else FIGURES_DIR
+    out.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out / f"{name}.png")
+
+# core/registry.py - dans run_one()
+set_current_category(item.category)
+try:
+    data = item.run()
+finally:
+    set_current_category(None)
+\end{lstlisting}
+
+\textbf{Résultat} : aucune analyse ne touche au contexte. La magie est centralisée et transparente. Les figures sont automatiquement rangées dans \code{outputs/figures/<category>/}.
+
+\section{CLI flexible}
+
+\begin{lstlisting}[language=Bash, caption={Exemples d'utilisation}]
+# Lister les 22 analyses (groupées par categorie)
+python dataset_stats/run.py --list
+
+# Tout executer
+python dataset_stats/run.py
+
+# Selection precise par ID
+python dataset_stats/run.py --only 01,03,07,14,15
+
+# Par categorie
+python dataset_stats/run.py --category evaluation
+
+# Recherche par mot-cle
+python dataset_stats/run.py --filter training
+
+# Tout sauf certaines
+python dataset_stats/run.py --except 06,10
+\end{lstlisting}
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 7 — PHASE 5 (DEPLOIEMENT)
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Phase 5 : Déploiement}
+
+\section{API FastAPI}
+
+\subsection{Architecture}
+
+L'API est dans \code{api/app.py} et expose 7 endpoints REST. Le modèle ResNet50 est chargé \textbf{une seule fois} au démarrage en singleton.
+
+\begin{lstlisting}[language=Python, caption={Lifecycle de l'API}]
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global predictor
+    log.info("Chargement du modele...")
+    try:
+        predictor = load_model()  # singleton
+        log.info("Modele pret.")
+    except Exception as exc:
+        log.error(f"Erreur chargement modele : {exc}")
+        predictor = None
+    yield
+    log.info("Arret de l'API.")
+\end{lstlisting}
+
+\subsection{Les 7 endpoints}
+
+\begin{table}[!htbp]
+\centering
+\caption{Endpoints REST exposés}
+\begin{tabularx}{\textwidth}{|c|l|c|X|}
+\hline
+\textbf{\#} & \textbf{Route} & \textbf{Auth} & \textbf{Description} \\
+\hline
+1 & \code{GET /health} & \rt{\xmark} & Statut + métadonnées modèle \\
+\hline
+2 & \code{POST /predict} & \gn{\cmark} & Image $\to$ classe + Grad-CAM (cache MD5) \\
+\hline
+3 & \code{GET /random} & \rt{\xmark} & Image dataset aléatoire + prédiction \\
+\hline
+4 & \code{GET /explain/\{class\}} & \rt{\xmark} & Infos médicales (description, urgence) \\
+\hline
+5 & \code{GET /sample/\{class\}} & \rt{\xmark} & Image d'exemple base64 \\
+\hline
+6 & \code{POST /batch} & \gn{\cmark} & Jusqu'à 20 images en parallèle \\
+\hline
+7 & \code{GET /stats} & \rt{\xmark} & Statistiques de session \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Pipeline d'une requête \code{POST /predict}}
+
+\begin{enumerate}
+\item Validation MIME (JPEG/PNG) + taille ($\leq$ 10 MB)
+\item Calcul MD5 du contenu $\to$ cache lookup (LRU 100 entrées)
+\item Si cache hit : retour instantané avec \code{from\_cache: true}
+\item Sinon : preprocessing (Resize 224 + Normalize ImageNet)
+\item Forward pass ResNet50 ($\sim$30 ms CPU / 10 ms GPU)
+\item Softmax + argmax $\to$ classe + probabilités
+\item Grad-CAM via hooks PyTorch sur \code{layer4[-1]} ($\sim$80 ms CPU)
+\item Encodage base64 (image + heatmap + overlay)
+\item Update session\_stats + cache write
+\item Retour JSON ($\sim$150 ms total CPU)
+\end{enumerate}
+
+\subsection{Grad-CAM en pur PyTorch}
+
+Le projet implémente Grad-CAM \textbf{sans dépendance TensorFlow}, directement avec les hooks PyTorch :
+
+\begin{lstlisting}[language=Python, caption={Grad-CAM via hooks (extrait)}]
+def compute_gradcam(model, tensor, target_idx):
+    activations, gradients = [], []
+    fwd = model.base_model.layer4[-1].register_forward_hook(
+        lambda m, i, o: activations.append(o)
+    )
+    bwd = model.base_model.layer4[-1].register_full_backward_hook(
+        lambda m, gi, go: gradients.append(go[0])
+    )
+    img = tensor.clone().requires_grad_(True)
+    with torch.enable_grad():
+        out = model(img)
+        one_hot = torch.zeros_like(out)
+        one_hot[0][target_idx] = 1.0
+        out.backward(gradient=one_hot)
+    fwd.remove(); bwd.remove()
+
+    acts  = activations[0].squeeze(0)
+    grads = gradients[0].squeeze(0)
+    weights = grads.mean(dim=(1, 2))
+    cam = (weights[:, None, None] * acts).sum(dim=0)
+    cam = F.relu(cam)
+    cam = (cam - cam.min()) / (cam.max() - cam.min())
+    return cam.cpu().numpy()
+\end{lstlisting}
+
+\subsection{Sécurité}
+
+\begin{table}[!htbp]
+\centering
+\caption{Couches de sécurité de l'API}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Mesure} & \textbf{Outil / config} \\
+\hline
+CORS configurable & \code{BRAINSCAN\_CORS\_ORIGINS} (CSV) \\
+\hline
+Rate limiting & \code{slowapi} 60 req/min/IP par défaut \\
+\hline
+Authentification & Header \code{X-API-Key} (optionnel) \\
+\hline
+Validation MIME & whitelist JPEG/PNG \\
+\hline
+Limite taille & 10 MB par fichier \\
+\hline
+Cache LRU & 100 entrées max (anti-DOS) \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Frontend Vanilla JavaScript}
+
+\subsection{Stack technique}
+
+L'interface dans \code{interface/} est construite \textbf{sans framework} :
+
+\begin{itemize}
+\item \textbf{HTML5} sémantique ($\sim$388 lignes)
+\item \textbf{CSS3} avec custom properties pour theming light/dark ($\sim$922 lignes)
+\item \textbf{Vanilla JS ES2020} en 16 blocs commentés ($\sim$1\,350 lignes)
+\item CDN externes : Chart.js 4.4, Lucide, jsPDF, Inter font
+\item \textbf{Aucun} \code{node\_modules/}, \textbf{aucun} build step
+\end{itemize}
+
+\subsection{Architecture en 16 blocs}
+
+\begin{table}[!htbp]
+\centering
+\caption{Découpage de \code{app.js}}
+\small
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Bloc} & \textbf{Rôle} \\
+\hline
+1 & CONFIG, CLASS\_STYLES, AppState, activeFilters, DOM cache \\
+2 & API object (6 fetch wrappers async) \\
+3 & Toasts (max 3 simultanés, auto-dismiss) \\
+4 & API status polling (toutes les 30s) \\
+5 & File handling + heuristique qualité IRM (canvas) \\
+6 & Loader + clearUpload \\
+7 & displayResults (badge, confiance, accordion) \\
+8 & Chart.js horizontal bars + plugin labels \\
+9 & History (compress thumbnails, save, load) \\
+10 & Filters + pagination + render \\
+11 & Session stats + CSV export \\
+12 & Zoom modal + dark mode + opacity slider \\
+13 & Export PNG (canvas) + Export PDF (jsPDF) \\
+14 & Compare mode (2 IRM en parallèle) \\
+15 & Batch analysis (jusqu'à 20 fichiers) \\
+16 & Listeners + DOMContentLoaded \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Fonctionnalités utilisateur}
+
+\begin{itemize}
+\item Upload \textbf{drag-and-drop} ou click-to-browse
+\item Détection automatique \textbf{IRM-like} (heuristique canvas 64$\times$64)
+\item Affichage \textbf{Grad-CAM} : original / heatmap / overlay (zoomable)
+\item Graphique horizontal \textbf{Chart.js} animé
+\item Accordion \textbf{infos médicales} (via \code{/explain})
+\item \textbf{Historique} persisté en localStorage (max 100, filtres + pagination)
+\item Export \textbf{PDF} (jsPDF), \textbf{PNG} (canvas), \textbf{CSV} (historique)
+\item \textbf{Mode comparaison} (2 IRM en parallèle via \code{Promise.all})
+\item \textbf{Batch} (jusqu'à 20 images séquentielles)
+\item \textbf{Dark/Light mode} avec persistance
+\end{itemize}
+
+\section{Frontend alternatif : Streamlit}
+
+Le dossier \code{streamlit\_app/app.py} fournit une \textbf{alternative mono-fichier} qui charge directement le modèle (sans API séparée) :
+
+\begin{table}[!htbp]
+\centering
+\caption{Streamlit vs FastAPI + Vanilla JS}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\textbf{Critère} & \textbf{Streamlit} & \textbf{FastAPI + JS} \\
+\hline
+Démarrage & 1 commande & 2 services \\
+Architecture & Monolithique & REST API découplée \\
+Multi-utilisateurs & \rt{Non} & \gn{Oui} \\
+Personnalisation UI & Limitée & Totale \\
+Idéal pour & Démos rapides & Production \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Containerisation Docker}
+
+\subsection{Dockerfile multi-stage}
+
+Le \code{Dockerfile} utilise une approche \textbf{multi-stage} pour minimiser la taille finale :
+
+\begin{lstlisting}[language=Bash, caption={Stages du Dockerfile}]
+# Stage 1 (builder) : installe deps avec gcc
+FROM python:3.11-slim AS builder
+RUN apt-get install build-essential libgl1
+RUN pip install --user -r requirements.txt
+
+# Stage 2 (runtime) : copie packages, sans compilateurs
+FROM python:3.11-slim AS runtime
+COPY --from=builder /root/.local /root/.local
+RUN apt-get install libgl1 curl    # libs runtime uniquement
+USER brainscan                       # non-root
+HEALTHCHECK CMD curl -f http://localhost:8000/health
+CMD ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+\end{lstlisting}
+
+\textbf{Caractéristiques} :
+\begin{itemize}
+\item Image finale $\sim$1.5 GB
+\item Tourne en utilisateur non-root (\code{brainscan})
+\item Healthcheck intégré
+\item OpenCV headless (\code{libgl1} sans interface graphique)
+\end{itemize}
+
+\subsection{docker-compose}
+
+Le \code{docker-compose.yml} orchestre l'API et un Nginx servant l'interface statique :
+
+\begin{lstlisting}[language=Bash, caption={Lancement Docker}]
+# Build + lance API (8000) + Nginx (3000)
+docker compose up --build
+
+# En arriere-plan
+docker compose up -d
+
+# Stop propre
+docker compose down
+\end{lstlisting}
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 8 — QUALITE
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Phase 6 : Qualité du code}
+
+\section{Suite de tests pytest}
+
+Le dossier \code{tests/} contient 17 tests couvrant l'API et le registry \code{dataset\_stats/}.
+
+\begin{table}[!htbp]
+\centering
+\caption{Couverture des tests}
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Fichier} & \textbf{Tests} & \textbf{Couverture} \\
+\hline
+\code{test\_api.py} & 13 & E2E tous les endpoints (TestClient in-process) \\
+\hline
+\code{test\_dataset\_stats.py} & 4 & Registry auto-discovery + validation \\
+\hline
+\textbf{Total} & \textbf{17} & \textbf{Passing en $\sim$10 secondes} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Détail des 13 tests API}
+
+\begin{enumerate}
+\item \code{test\_health\_ok} : \code{/health} renvoie les bonnes métadonnées
+\item \code{test\_predict\_jpeg} : prédiction sur JPEG aléatoire
+\item \code{test\_predict\_png} : prédiction sur PNG aléatoire
+\item \code{test\_predict\_invalid\_format} : 400 sur \code{text/plain}
+\item \code{test\_predict\_cache\_hit} : 2 mêmes uploads $\to$ \code{from\_cache: true}
+\item \code{test\_random\_returns\_prediction} : \code{/random} avec true\_class
+\item \code{test\_explain\_glioma} : infos médicales valides
+\item \code{test\_explain\_no\_tumor} : idem
+\item \code{test\_explain\_unknown\_class} : 404 sur classe inconnue
+\item \code{test\_sample\_pituitary} : image base64 retournée
+\item \code{test\_sample\_unknown\_class} : 404
+\item \code{test\_stats} : structure de réponse complète
+\item \code{test\_batch} : 2 images analysées en lot
+\end{enumerate}
+
+\subsection{Fixtures partagées (\code{conftest.py})}
+
+\begin{lstlisting}[language=Python, caption={Fixtures pytest}]
+@pytest.fixture(scope="session")
+def client():
+    """TestClient FastAPI in-process (model load 1 fois)."""
+    from fastapi.testclient import TestClient
+    from api.app import app
+    with TestClient(app) as c:
+        yield c
+
+@pytest.fixture
+def fake_jpeg_bytes() -> bytes:
+    """JPEG aleatoire 224x224 RGB en memoire."""
+    arr = (np.random.rand(224, 224, 3) * 255).astype("uint8")
+    img = Image.fromarray(arr)
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    return buf.getvalue()
+\end{lstlisting}
+
+\section{CI/CD GitHub Actions}
+
+Le pipeline \code{.github/workflows/ci.yml} se déclenche sur \code{push} et \code{pull\_request} avec 3 jobs séquentiels :
+
+\begin{table}[!htbp]
+\centering
+\caption{Pipeline CI/CD}
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{\#} & \textbf{Job} & \textbf{Outils} & \textbf{Durée} \\
+\hline
+1 & lint & ruff + black --check & $\sim$30 s \\
+\hline
+2 & test (needs lint) & compileall + pytest & $\sim$2 min \\
+\hline
+3 & docker (needs test) & Buildx + cache GHA & $\sim$1-3 min \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Pre-commit hooks}
+
+Le fichier \code{.pre-commit-config.yaml} active des hooks Git locaux pour intercepter les problèmes \textbf{avant} le push :
+
+\begin{lstlisting}[language=Bash, caption={Hooks pre-commit configurés}]
+- trailing-whitespace
+- end-of-file-fixer
+- check-yaml / check-json
+- check-added-large-files (max 500 KB)
+- detect-private-key
+- ruff --fix
+- black
+\end{lstlisting}
+
+\section{Configuration centralisée (\code{pyproject.toml})}
+
+Toute la config tooling est dans un seul fichier :
+
+\begin{lstlisting}[language=Python, caption={Extrait de pyproject.toml}]
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "W", "F", "I", "B", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --tb=short"
+\end{lstlisting}
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 9 — RESULTATS
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Résultats et benchmarks}
+
+\section{Synthèse des performances}
+
+\begin{table}[!htbp]
+\centering
+\caption{Tableau de bord global}
+\begin{tabular}{|l|r|}
+\hline
+\textbf{Métrique} & \textbf{Valeur} \\
+\hline
+Test accuracy globale & \textbf{98.96\%} \\
+Erreurs de classification (test) & 11 / 1\,054 \\
+Macro F1-score & 0.99 \\
+Inférence CPU (i7) & $\sim$36 ms/image \\
+Inférence GPU (RTX 4060) & $\sim$10 ms/image \\
+\hline
+\rowcolor{lightgray}
+\multicolumn{2}{|l|}{\textbf{Code base}} \\
+\hline
+Lignes Python (modules + scripts) & $\sim$3\,700 \\
+Lignes Frontend (HTML+CSS+JS) & $\sim$2\,660 \\
+Lignes documentation (READMEs+FLOW) & $\sim$6\,400 \\
+\hline
+\rowcolor{lightgray}
+\multicolumn{2}{|l|}{\textbf{Tests \& qualité}} \\
+\hline
+Tests pytest & 17 / 17 passing \\
+Couverture endpoints API & 100\% \\
+Pipeline CI durée totale & 3-5 min \\
+\hline
+\rowcolor{lightgray}
+\multicolumn{2}{|l|}{\textbf{Architecture modulaire}} \\
+\hline
+Analyses statistiques & 22 (auto-découvertes) \\
+Endpoints API REST & 7 \\
+Frontends disponibles & 2 (Vanilla JS + Streamlit) \\
+\hline
+\rowcolor{lightgray}
+\multicolumn{2}{|l|}{\textbf{Modèle}} \\
+\hline
+Architecture & ResNet50 + tête custom \\
+Paramètres totaux & $\sim$24.6M \\
+Taille checkpoint & $\sim$95 MB \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Comparaison avant/après refactor}
+
+Le projet a subi un \textbf{refactor majeur} qui a dramatiquement amélioré la qualité :
+
+\begin{table}[!htbp]
+\centering
+\caption{Métriques avant/après refactor}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\textbf{Aspect} & \textbf{Avant} & \textbf{Après} \\
+\hline
+Code mort TF dans \code{src/} & 6 fichiers & 0 (déplacés ou supprimés) \\
+\hline
+Doublons \code{dataset\_stats/} & 3 (figures/, generate\_stats.py, summary.json) & 0 \\
+\hline
+Tests automatisés & 0 & 17 \\
+\hline
+Logger & \code{print()} partout & Logger Python configurable \\
+\hline
+Sécurité API & CORS \code{["*"]} hardcodé & Config + API key + rate-limit \\
+\hline
+Docker & \rt{\xmark} & \gn{Multi-stage + compose} \\
+\hline
+CI/CD & \rt{\xmark} & GitHub Actions (lint+test+build) \\
+\hline
+Pre-commit & \rt{\xmark} & \gn{\cmark} \\
+\hline
+Git LFS config & \rt{\xmark} & \gn{\cmark} \\
+\hline
+\code{.env} support & \rt{\xmark} & \gn{Avec template} \\
+\hline
+Documentation & 4 READMEs & 17 READMEs + 17 FLOW.md \\
+\hline
+\end{tabularx}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════
+% CHAPITRE 10 — CONCLUSION
+% ════════════════════════════════════════════════════════════════════════
+\chapter{Conclusion et perspectives}
+
+\section{Bilan}
+
+BrainScan AI est un projet \textbf{abouti et production-ready} qui démontre l'application de techniques modernes de deep learning à un problème médical concret. Les choix architecturaux (transfer learning 2 stages, registry auto-découverte, séparation API/frontend) ont permis d'atteindre des résultats remarquables :
+
+\begin{itemize}
+\item \textbf{98.96\% d'accuracy} sur un test set indépendant
+\item \textbf{Latence sub-100ms} en inférence
+\item \textbf{Interprétabilité} via Grad-CAM en pur PyTorch
+\item \textbf{Qualité de code} : 17 tests, CI verte, pre-commit, Docker
+\item \textbf{Documentation exhaustive} : 17 READMEs $+$ 17 FLOW.md
+\end{itemize}
+
+\section{Limites actuelles}
+
+\begin{warningbox}[Limites à connaître]
+\begin{itemize}
+\item Le modèle a été entraîné sur un \textbf{seul dataset Kaggle} : généralisation à d'autres cohortes non vérifiée
+\item Pas de \textbf{cross-validation} K-fold (split unique 70/15/15)
+\item Pas d'\textbf{ensemble} de modèles (un seul ResNet50)
+\item L'usage est strictement \textbf{éducatif} : ne remplace pas un radiologue
+\item Le modèle ne distingue pas le \textbf{grade} de la tumeur (Glioma I-IV par exemple)
+\item Pas d'\textbf{intégration EHR} ou DICOM (uniquement JPEG/PNG)
+\end{itemize}
+\end{warningbox}
+
+\section{Pistes d'amélioration}
+
+\subsection{Performance modèle}
+
+\begin{itemize}
+\item \textbf{Ensemble} : moyenner ResNet50 + EfficientNet + ViT
+\item \textbf{Test-Time Augmentation (TTA)} : moyenner les prédictions sur 8 augmentations
+\item \textbf{Cross-validation 5-fold} pour robustesse
+\item Datasets supplémentaires : BraTS, TCGA-GBM
+\end{itemize}
+
+\subsection{Production}
+
+\begin{itemize}
+\item \textbf{Quantization} (INT8) : modèle 4$\times$ plus léger ($\sim$25 MB)
+\item \textbf{ONNX export} pour inférence cross-platform
+\item \textbf{Monitoring} : Sentry pour erreurs, Prometheus pour métriques
+\item \textbf{Cache distribué} : Redis au lieu du LRU in-memory
+\item \textbf{Async loading} du modèle au boot pour API instantanée
+\end{itemize}
+
+\subsection{Fonctionnalités}
+
+\begin{itemize}
+\item Support \textbf{DICOM} (format standard en radiologie)
+\item Détection multi-tumeurs (segmentation au lieu de classification)
+\item Module de \textbf{rapport médical} structuré (PDF auto-généré)
+\item \textbf{API key management} avec dashboard admin
+\item Internationalisation (i18n) pour le frontend
+\end{itemize}
+
+\section{Mot final}
+
+Ce projet illustre qu'il est possible de construire un système ML médical \textbf{de bout en bout} en respectant les meilleures pratiques modernes : modularité, tests, documentation, sécurité, reproductibilité. La courbe d'apprentissage est élevée mais le résultat est durable, maintenable et étendu de manière naturelle (ajouter une 23$^\text{e}$ analyse statistique prend 5 minutes grâce à l'auto-découverte).
+
+\begin{successbox}[Le projet en chiffres]
+\centering
+\begin{tabular}{rl}
+17 & READMEs détaillés \\
+17 & FLOW.md visuels \\
+22 & Analyses modulaires \\
+17 & Tests automatisés \\
+7 & Endpoints REST \\
+2 & Frontends (FastAPI+JS et Streamlit) \\
+4 & Classes médicales \\
+1 & Architecture solide
+\end{tabular}
+\end{successbox}
+
+% ════════════════════════════════════════════════════════════════════════
+% ANNEXES
+% ════════════════════════════════════════════════════════════════════════
+\appendix
+\chapter{Annexes}
+
+\section{Inventaire complet des fichiers}
+
+\subsection{Fichiers à la racine}
+
+\begin{table}[!htbp]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Fichier} & \textbf{Rôle} \\
+\hline
+\code{start.py} & Lanceur intelligent cross-platform \\
+\code{start.bat} & Lanceur Windows (double-clic) \\
+\code{stop.bat} & Arrête les serveurs (ports 8000/3000) \\
+\code{Dockerfile} & Image Docker multi-stage \\
+\code{docker-compose.yml} & Orchestration API + Nginx \\
+\code{requirements.txt} & Dépendances production \\
+\code{requirements-dev.txt} & Dépendances dev (pytest, ruff, black) \\
+\code{runtime.txt} & Python 3.11.9 (pour Render) \\
+\code{config.json} & Métadonnées projet \\
+\code{pyproject.toml} & Config black + ruff + pytest \\
+\code{pytest.ini} & Config pytest \\
+\code{.env.example} & Template variables d'environnement \\
+\code{.gitignore} & Patterns à exclure du repo \\
+\code{.gitattributes} & Git LFS pour *.pth \\
+\code{.dockerignore} & Patterns à exclure du build Docker \\
+\code{.pre-commit-config.yaml} & Hooks pre-commit \\
+\code{README.md} & Documentation principale (510 lignes) \\
+\code{FLOW.md} & Pipeline global du projet \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Documentation par dossier}
+
+Les 17 dossiers du projet ont chacun deux fichiers de documentation :
+
+\begin{table}[!htbp]
+\centering
+\caption{Documentation par dossier}
+\small
+\begin{tabular}{|l|c|c|l|}
+\hline
+\textbf{Dossier} & \textbf{README} & \textbf{FLOW} & \textbf{Sujet principal} \\
+\hline
+\code{api/} & \gn{\cmark} & \gn{\cmark} & FastAPI · 7 endpoints \\
+\code{interface/} & \gn{\cmark} & \gn{\cmark} & Vanilla JS · 16 blocs \\
+\code{streamlit\_app/} & \gn{\cmark} & \gn{\cmark} & Alternative Streamlit \\
+\code{src/} & \gn{\cmark} & \gn{\cmark} & Modules PyTorch \\
+\code{scripts/} & \gn{\cmark} & \gn{\cmark} & Entry points CLI \\
+\code{tests/} & \gn{\cmark} & \gn{\cmark} & 17 tests pytest \\
+\code{legacy/} & \gn{\cmark} & \gn{\cmark} & Code TF archivé \\
+\code{dataset\_stats/} & \gn{\cmark} & \gn{\cmark} & 22 analyses \\
+\code{dataset\_stats/core/} & \gn{\cmark} & \gn{\cmark} & Infrastructure \\
+\code{dataset\_stats/analyses/} & \gn{\cmark} & \gn{\cmark} & Contrat des analyses \\
+\code{data/} & \gn{\cmark} & \gn{\cmark} & Dataset Kaggle \\
+\code{models/} & \gn{\cmark} & \gn{\cmark} & Checkpoints .pth \\
+\code{logs/} & \gn{\cmark} & \gn{\cmark} & Training history \\
+\code{results/} & \gn{\cmark} & \gn{\cmark} & Eval outputs \\
+\code{docs/} & \gn{\cmark} & \gn{\cmark} & Phases historiques \\
+\code{.github/} & \gn{\cmark} & \gn{\cmark} & CI/CD \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Commandes essentielles}
+
+\subsection{Démarrage rapide}
+
+\begin{lstlisting}[language=Bash, caption={Premier lancement}]
+# 1. Cloner et installer
+git clone https://github.com/iliass06/Brain-Tumor-project.git
+cd Brain-Tumor-project
+python -m venv venv
+venv\Scripts\pip install -r requirements.txt
+
+# 2. Lancer (cross-platform)
+python start.py
+
+# OU (Windows simple)
+double-clic sur start.bat
+
+# OU (Docker)
+docker compose up --build
+\end{lstlisting}
+
+\subsection{Pipeline ML complet}
+
+\begin{lstlisting}[language=Bash, caption={Pipeline projet de bout en bout}]
+# Phase 1 : Preparation des donnees
+python -m src.data_pipeline
+
+# Phase 2 : Entrainement
+python scripts/train.py
+
+# Phase 3 : Evaluation
+python scripts/evaluate.py
+
+# Phase 4 : Statistiques (22 analyses)
+python dataset_stats/run.py
+
+# Verification courbes
+python scripts/visualize_training.py
+\end{lstlisting}
+
+\subsection{Tests et qualité}
+
+\begin{lstlisting}[language=Bash, caption={Tests et lint}]
+# Tests pytest (17 tests, ~10 secondes)
+venv\Scripts\python.exe -m pytest tests/ -v
+
+# Avec couverture
+pytest --cov=api --cov=src tests/
+
+# Lint local (avant push)
+ruff check api/ src/ scripts/
+black --check api/ src/ scripts/
+
+# Auto-format
+black api/ src/ scripts/
+
+# Pre-commit (1x install)
+pre-commit install
+\end{lstlisting}
+
+\subsection{Variables d'environnement}
+
+\begin{table}[!htbp]
+\centering
+\caption{Variables \code{.env}}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Variable} & \textbf{Défaut} & \textbf{Effet} \\
+\hline
+\code{BRAINSCAN\_MODEL\_PATH} & \code{models/final\_model\_*.pth} & Chemin checkpoint \\
+\code{BRAINSCAN\_CORS\_ORIGINS} & \code{*} & CSV ou wildcard \\
+\code{BRAINSCAN\_API\_KEY} & (vide) & Auth header \code{X-API-Key} \\
+\code{BRAINSCAN\_RATE\_LIMIT} & \code{60} & Req/min/IP \\
+\code{BRAINSCAN\_DISABLE\_RATELIMIT} & \code{0} & \code{1} = bypass \\
+\code{BRAINSCAN\_LOG\_LEVEL} & \code{INFO} & DEBUG, INFO, WARNING, ERROR \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Glossaire}
+
+\begin{description}
+\item[\textbf{Albumentations}] Bibliothèque Python de data augmentation pour images, plus rapide que torchvision.transforms.
+\item[\textbf{BatchNorm}] Couche de normalisation par batch qui stabilise l'entraînement.
+\item[\textbf{CORS}] Cross-Origin Resource Sharing — mécanisme HTTP qui permet à un site web d'autoriser des requêtes depuis d'autres origines.
+\item[\textbf{Dropout}] Technique de régularisation : éteint aléatoirement un pourcentage de neurones pendant l'entraînement.
+\item[\textbf{EarlyStopping}] Arrête l'entraînement si la métrique de validation ne s'améliore plus pendant N époques.
+\item[\textbf{F1-score}] Moyenne harmonique de precision et recall : $F1 = 2 \cdot \frac{P \cdot R}{P+R}$.
+\item[\textbf{FastAPI}] Framework Python moderne pour construire des APIs REST asynchrones.
+\item[\textbf{Grad-CAM}] Gradient-weighted Class Activation Mapping — technique d'interprétabilité qui visualise les zones d'une image qui ont influencé la décision du modèle.
+\item[\textbf{LR (Learning Rate)}] Taux d'apprentissage : pas de descente dans l'optimisation.
+\item[\textbf{ResNet50}] Architecture de réseau de neurones convolutif à 50 couches avec connexions résiduelles (skip connections).
+\item[\textbf{Singleton}] Pattern de conception : une seule instance partagée pour toute la durée de vie de l'application.
+\item[\textbf{SlowAPI}] Bibliothèque de rate limiting pour FastAPI.
+\item[\textbf{Softmax}] Fonction qui transforme un vecteur de logits en distribution de probabilités sommant à 1.
+\item[\textbf{Stratification}] Procédé de split qui préserve la distribution des classes dans chaque sous-ensemble.
+\item[\textbf{TestClient}] Client HTTP in-process de FastAPI pour les tests (pas besoin d'uvicorn).
+\item[\textbf{Transfer Learning}] Réutiliser un modèle pré-entraîné sur une grande tâche (ImageNet) pour une tâche cible plus petite.
+\item[\textbf{TTA (Test-Time Augmentation)}] Moyenne des prédictions sur plusieurs augmentations de la même image en inférence.
+\end{description}
+
+% ════════════════════════════════════════════════════════════════════════
+% LICENCE
+% ════════════════════════════════════════════════════════════════════════
+\section{Licence et avertissements}
+
+\begin{warningbox}[Avertissement médical]
+Cet outil est destiné à un \textbf{usage éducatif et de recherche uniquement}. Il ne remplace en aucun cas un diagnostic médical professionnel. Les performances annoncées (98.96\%) ont été obtenues sur un dataset Kaggle public et ne garantissent pas une généralisation à toutes les populations cliniques.
+
+Consulter toujours un professionnel de santé qualifié pour tout sujet médical.
+\end{warningbox}
+
+\textbf{Licence} : Projet à usage éducatif.
+
+\textbf{Dataset} : \href{https://www.kaggle.com/datasets/sartajbhuvaji/brain-tumor-classification-mri}{Brain Tumor Classification MRI} de Sartaj Bhuvaji (Kaggle).
+
+\textbf{Frameworks} : PyTorch · FastAPI · Chart.js · jsPDF · Lucide — sous leurs licences respectives.
+
+% ────────────────────────────────────────────────────────────────────────
+% Fin du document
+% ────────────────────────────────────────────────────────────────────────
+
+\begin{center}
+{\color{cyan}\rule{0.6\textwidth}{1pt}}\\[0.5cm]
+{\large\bfseries\color{navy} BrainScan AI}\\
+{\itshape\color{darkgray} ResNet50 · 98.96\% accuracy · 22 analyses · Production-ready}\\[0.3cm]
+\textit{Fin du rapport — \today}
+\end{center}
+
+\end{document}
