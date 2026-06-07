@@ -69,3 +69,5 @@ dataset_stats/outputs/
 *.sqlite3
 *.bak
 *~
+
+.claude/worktrees/
